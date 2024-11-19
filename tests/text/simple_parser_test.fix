@@ -56,20 +56,20 @@ test_parser_repeat = (
 );
 
 test_parser_match_str_ok: (String, String) -> TestCase;
-test_parser_match_str_ok = |(text, match)| (
-    let testname = "test_parser_match_str_ok(" + text + "," + match + ")";
+test_parser_match_str_ok = |(text, match_)| (
+    let testname = "test_parser_match_str_ok(" + text + "," + match_ + ")";
     make_test(testname) $ |_|
-    let p = Parser::match_str(match);
+    let p = Parser::match_str(match_);
     let (_, next) = *(from_result $ p.run_parser_str(text));
-    let _ = *(assert_equal("column", next.@column, match.get_size));
+    let _ = *(assert_equal("column", next.@column, match_.get_size));
     pure()
 );
 
 test_parser_match_str_err: (String, String) -> TestCase;
-test_parser_match_str_err = |(text, match)| (
-    let testname = "test_parser_match_str_err(" + text + "," + match + ")";
+test_parser_match_str_err = |(text, match_)| (
+    let testname = "test_parser_match_str_err(" + text + "," + match_ + ")";
     make_test(testname) $ |_|
-    let p = Parser::match_str(match);
+    let p = Parser::match_str(match_);
     let res = p.run_parser_str(text);
     let _ = *(assert_true("err", res.is_err));
     pure()
