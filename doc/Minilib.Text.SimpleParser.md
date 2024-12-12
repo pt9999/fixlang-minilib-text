@@ -71,14 +71,6 @@ A function that creates a Parser structure based on the parsing function.
 
 ## `namespace Minilib.Text.SimpleParser::Parser`
 
-### `@_parser : Minilib.Text.SimpleParser::Parser a -> Minilib.Text.SimpleParser::Stream::Stream -> Std::Result Std::String (a, Minilib.Text.SimpleParser::Stream::Stream)`
-
-Retrieves the field `_parser` from a value of `Parser`.
-
-### `act__parser : [f : Std::Functor] ((Minilib.Text.SimpleParser::Stream::Stream -> Std::Result Std::String (a, Minilib.Text.SimpleParser::Stream::Stream)) -> f (Minilib.Text.SimpleParser::Stream::Stream -> Std::Result Std::String (a, Minilib.Text.SimpleParser::Stream::Stream))) -> Minilib.Text.SimpleParser::Parser a -> f (Minilib.Text.SimpleParser::Parser a)`
-
-Updates a value of `Parser` by applying a functorial action to field `_parser`.
-
 ### `debug : [a : Std::ToString] Std::String -> Minilib.Text.SimpleParser::Parser a -> Minilib.Text.SimpleParser::Parser a`
 
 Prints the parser result.
@@ -168,10 +160,6 @@ Matches a zero-or-more-length string of lowercase characters.
 
 Matches a zero-or-more-length string of whitespace characters.
 
-### `mod__parser : ((Minilib.Text.SimpleParser::Stream::Stream -> Std::Result Std::String (a, Minilib.Text.SimpleParser::Stream::Stream)) -> Minilib.Text.SimpleParser::Stream::Stream -> Std::Result Std::String (a, Minilib.Text.SimpleParser::Stream::Stream)) -> Minilib.Text.SimpleParser::Parser a -> Minilib.Text.SimpleParser::Parser a`
-
-Updates a value of `Parser` by applying a function to field `_parser`.
-
 ### `not_match : Minilib.Text.SimpleParser::Parser a`
 
 Raises a `_NotMatch` error.
@@ -213,10 +201,6 @@ Apply a stream to a parsing function and return the parsed result.
 Create a stream from a string, then apply a stream to a parsing function
 and return the parsed result.
 
-### `set__parser : (Minilib.Text.SimpleParser::Stream::Stream -> Std::Result Std::String (a, Minilib.Text.SimpleParser::Stream::Stream)) -> Minilib.Text.SimpleParser::Parser a -> Minilib.Text.SimpleParser::Parser a`
-
-Updates a value of `Parser` by setting field `_parser` to a specified one.
-
 ### `unit : Minilib.Text.SimpleParser::Parser ()`
 
 Match zero-length string.
@@ -255,85 +239,3 @@ Creates a stream from specified string.
 
 `start_stream.read_string_between(end_stream)` reads characters from `start_stream` to `end_stream`
  and convert them to a string.
-
-## `namespace Minilib.Text.SimpleParser::Stream::Stream`
-
-### `@column : Minilib.Text.SimpleParser::Stream::Stream -> Std::I64`
-
-Retrieves the field `column` from a value of `Stream`.
-
-### `@filename : Minilib.Text.SimpleParser::Stream::Stream -> Std::String`
-
-Retrieves the field `filename` from a value of `Stream`.
-
-### `@iter : Minilib.Text.SimpleParser::Stream::Stream -> Std::Iterator Std::U8`
-
-Retrieves the field `iter` from a value of `Stream`.
-
-### `@line : Minilib.Text.SimpleParser::Stream::Stream -> Std::I64`
-
-Retrieves the field `line` from a value of `Stream`.
-
-### `@position : Minilib.Text.SimpleParser::Stream::Stream -> Std::I64`
-
-Retrieves the field `position` from a value of `Stream`.
-
-### `act_column : [f : Std::Functor] (Std::I64 -> f Std::I64) -> Minilib.Text.SimpleParser::Stream::Stream -> f Minilib.Text.SimpleParser::Stream::Stream`
-
-Updates a value of `Stream` by applying a functorial action to field `column`.
-
-### `act_filename : [f : Std::Functor] (Std::String -> f Std::String) -> Minilib.Text.SimpleParser::Stream::Stream -> f Minilib.Text.SimpleParser::Stream::Stream`
-
-Updates a value of `Stream` by applying a functorial action to field `filename`.
-
-### `act_iter : [f : Std::Functor] (Std::Iterator Std::U8 -> f (Std::Iterator Std::U8)) -> Minilib.Text.SimpleParser::Stream::Stream -> f Minilib.Text.SimpleParser::Stream::Stream`
-
-Updates a value of `Stream` by applying a functorial action to field `iter`.
-
-### `act_line : [f : Std::Functor] (Std::I64 -> f Std::I64) -> Minilib.Text.SimpleParser::Stream::Stream -> f Minilib.Text.SimpleParser::Stream::Stream`
-
-Updates a value of `Stream` by applying a functorial action to field `line`.
-
-### `act_position : [f : Std::Functor] (Std::I64 -> f Std::I64) -> Minilib.Text.SimpleParser::Stream::Stream -> f Minilib.Text.SimpleParser::Stream::Stream`
-
-Updates a value of `Stream` by applying a functorial action to field `position`.
-
-### `mod_column : (Std::I64 -> Std::I64) -> Minilib.Text.SimpleParser::Stream::Stream -> Minilib.Text.SimpleParser::Stream::Stream`
-
-Updates a value of `Stream` by applying a function to field `column`.
-
-### `mod_filename : (Std::String -> Std::String) -> Minilib.Text.SimpleParser::Stream::Stream -> Minilib.Text.SimpleParser::Stream::Stream`
-
-Updates a value of `Stream` by applying a function to field `filename`.
-
-### `mod_iter : (Std::Iterator Std::U8 -> Std::Iterator Std::U8) -> Minilib.Text.SimpleParser::Stream::Stream -> Minilib.Text.SimpleParser::Stream::Stream`
-
-Updates a value of `Stream` by applying a function to field `iter`.
-
-### `mod_line : (Std::I64 -> Std::I64) -> Minilib.Text.SimpleParser::Stream::Stream -> Minilib.Text.SimpleParser::Stream::Stream`
-
-Updates a value of `Stream` by applying a function to field `line`.
-
-### `mod_position : (Std::I64 -> Std::I64) -> Minilib.Text.SimpleParser::Stream::Stream -> Minilib.Text.SimpleParser::Stream::Stream`
-
-Updates a value of `Stream` by applying a function to field `position`.
-
-### `set_column : Std::I64 -> Minilib.Text.SimpleParser::Stream::Stream -> Minilib.Text.SimpleParser::Stream::Stream`
-
-Updates a value of `Stream` by setting field `column` to a specified one.
-
-### `set_filename : Std::String -> Minilib.Text.SimpleParser::Stream::Stream -> Minilib.Text.SimpleParser::Stream::Stream`
-
-Updates a value of `Stream` by setting field `filename` to a specified one.
-
-### `set_iter : Std::Iterator Std::U8 -> Minilib.Text.SimpleParser::Stream::Stream -> Minilib.Text.SimpleParser::Stream::Stream`
-
-Updates a value of `Stream` by setting field `iter` to a specified one.
-
-### `set_line : Std::I64 -> Minilib.Text.SimpleParser::Stream::Stream -> Minilib.Text.SimpleParser::Stream::Stream`
-
-Updates a value of `Stream` by setting field `line` to a specified one.
-
-### `set_position : Std::I64 -> Minilib.Text.SimpleParser::Stream::Stream -> Minilib.Text.SimpleParser::Stream::Stream`
-
-Updates a value of `Stream` by setting field `position` to a specified one.
