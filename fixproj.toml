@@ -5,14 +5,14 @@ authors = ["pt9999"]
 license = "MIT"
 
 [build]
-opt_level = "separated"
+opt_level = "basic"
 files = [
     "lib/text/simple_parser.fix",
     "lib/text/unicode.fix",
 ]
 
 [build.test]
-opt_level = "separated"
+opt_level = "basic"
 files = [
     "tests/test.fix",
     "tests/text/simple_parser_test.fix",
