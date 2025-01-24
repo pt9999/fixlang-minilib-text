@@ -22,7 +22,7 @@ Result type that returns a value of an arbitrary type and a stream.
 A structure with a function that receive a stream, parse it, and
 return the parsed result and the next stream position.
 
-#### field `_parser : Minilib.Text.SimpleParser::Stream::Stream -> Std::Result Std::String (a, Minilib.Text.SimpleParser::Stream::Stream)`
+#### field `_parser : Minilib.Text.SimpleParser::Stream::Stream -> Minilib.Text.SimpleParser::ParseResult a`
 
 ## `namespace Minilib.Text.SimpleParser::Stream`
 
@@ -39,7 +39,7 @@ and offset from the beginning of the file.
 
 #### field `position : Std::I64`
 
-#### field `iter : Std::Iterator Std::U8`
+#### field `iter : Std::Iterator Minilib.Text.SimpleParser::Char`
 
 # Traits and aliases
 
@@ -61,11 +61,11 @@ Converts a stream to a string, for example `"Stream(pos=1001)"`
 
 ## `namespace Minilib.Text.SimpleParser`
 
-### `_NotMatch : Std::String`
+### `_NotMatch : Std::ErrMsg`
 
 A special error message that represents the parser is not matched.
 
-### `parser : (Minilib.Text.SimpleParser::Stream::Stream -> Std::Result Std::String (a, Minilib.Text.SimpleParser::Stream::Stream)) -> Minilib.Text.SimpleParser::Parser a`
+### `parser : (Minilib.Text.SimpleParser::Stream::Stream -> Minilib.Text.SimpleParser::ParseResult a) -> Minilib.Text.SimpleParser::Parser a`
 
 A function that creates a Parser structure based on the parsing function.
 
@@ -93,24 +93,24 @@ Returns the current stream position.
 `p.if_exists` returns `some(x)` if `p` returns `x` as a parse result,
 or `none()` if `p` does not match.
 
-### `map_result : (a -> Std::Result Std::String b) -> Minilib.Text.SimpleParser::Parser a -> Minilib.Text.SimpleParser::Parser b`
+### `map_result : (a -> Std::Result Std::ErrMsg b) -> Minilib.Text.SimpleParser::Parser a -> Minilib.Text.SimpleParser::Parser b`
 
 `parser.map_result(f)` maps the parser result with `f`, possibly reports
 an error message.
 
-### `match_any_char : Minilib.Text.SimpleParser::Parser Std::U8`
+### `match_any_char : Minilib.Text.SimpleParser::Parser Minilib.Text.SimpleParser::Char`
 
 Matches any single character. The parsed result is
 a single matched character.
 If the match fails (eg. the end of stream), a `_NotMatch` error is raised.
 
-### `match_char : Std::U8 -> Minilib.Text.SimpleParser::Parser ()`
+### `match_char : Minilib.Text.SimpleParser::Char -> Minilib.Text.SimpleParser::Parser ()`
 
 Matches a single character specified by the argument.
 The parsed result is nothing.
 If the match fails, a `_NotMatch` error is raised.
 
-### `match_char_class : (Std::U8 -> Std::Bool) -> Minilib.Text.SimpleParser::Parser Std::U8`
+### `match_char_class : (Minilib.Text.SimpleParser::Char -> Std::Bool) -> Minilib.Text.SimpleParser::Parser Minilib.Text.SimpleParser::Char`
 
 Matches a character satisfying the specified condition.
 
@@ -144,7 +144,7 @@ Matches a string specified by the argument.
 The parsed result is nothing.
 If the match fails, a `_NotMatch` error is raised.
 
-### `match_str_class : (Std::U8 -> Std::Bool) -> Minilib.Text.SimpleParser::Parser Std::String`
+### `match_str_class : (Minilib.Text.SimpleParser::Char -> Std::Bool) -> Minilib.Text.SimpleParser::Parser Std::String`
 
 Matches a zero-or-more-length string. Each character should satisfy the specified condition.
 
@@ -192,11 +192,11 @@ an array of successful matches.
 If a _NotMatch error is raised, returns as success.
 If an error other than _NotMatch is raised, reports that error.
 
-### `run_parser : Minilib.Text.SimpleParser::Stream::Stream -> Minilib.Text.SimpleParser::Parser a -> Std::Result Std::String (a, Minilib.Text.SimpleParser::Stream::Stream)`
+### `run_parser : Minilib.Text.SimpleParser::Stream::Stream -> Minilib.Text.SimpleParser::Parser a -> Minilib.Text.SimpleParser::ParseResult a`
 
 Apply a stream to a parsing function and return the parsed result.
 
-### `run_parser_str : Std::String -> Minilib.Text.SimpleParser::Parser a -> Std::Result Std::String (a, Minilib.Text.SimpleParser::Stream::Stream)`
+### `run_parser_str : Std::String -> Minilib.Text.SimpleParser::Parser a -> Minilib.Text.SimpleParser::ParseResult a`
 
 Create a stream from a string, then apply a stream to a parsing function
 and return the parsed result.
@@ -211,7 +211,7 @@ Synonym for `repeat`.
 
 ## `namespace Minilib.Text.SimpleParser::Stream`
 
-### `advance : Minilib.Text.SimpleParser::Stream::Stream -> Std::Option (Std::U8, Minilib.Text.SimpleParser::Stream::Stream)`
+### `advance : Minilib.Text.SimpleParser::Stream::Stream -> Std::Option (Minilib.Text.SimpleParser::Char, Minilib.Text.SimpleParser::Stream::Stream)`
 
 `stream.advance` gets next character and increment the stream position.
 
@@ -219,7 +219,7 @@ Synonym for `repeat`.
 
 An empty Stream.
 
-### `error : Std::String -> Minilib.Text.SimpleParser::Stream::Stream -> Std::Result Std::String a`
+### `error : Std::String -> Minilib.Text.SimpleParser::Stream::Stream -> Std::Result Std::ErrMsg a`
 
 `stream.error(str)` reports an error along with where it occurred.
 
@@ -227,7 +227,7 @@ An empty Stream.
 
 Creates a stream from specified string.
 
-### `read_all : Minilib.Text.SimpleParser::Stream::Stream -> (Std::Array Std::U8, Minilib.Text.SimpleParser::Stream::Stream)`
+### `read_all : Minilib.Text.SimpleParser::Stream::Stream -> (Std::Array Minilib.Text.SimpleParser::Char, Minilib.Text.SimpleParser::Stream::Stream)`
 
 `stream.read_all` reads all characters to the end of stream.
 
