@@ -39,7 +39,7 @@ and offset from the beginning of the file.
 
 #### field `position : Std::I64`
 
-#### field `iter : Std::Iterator Minilib.Text.SimpleParser::Char`
+#### field `iter : Std::Iterator::DynIterator Minilib.Text.SimpleParser::Char`
 
 # Traits and aliases
 
