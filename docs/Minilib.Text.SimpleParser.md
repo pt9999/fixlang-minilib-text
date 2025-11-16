@@ -1,6 +1,6 @@
 # Minilib.Text.SimpleParser
 
-Defined in minilib-text@0.5.2
+Defined in minilib-text@0.5.3
 
 Simple text parser. Customizable by monadic operations.
 - Stream of characters
@@ -10,12 +10,6 @@ Simple text parser. Customizable by monadic operations.
 ## Values
 
 ### namespace Minilib.Text.SimpleParser
-
-#### _NotMatch
-
-Type: `Std::ErrMsg`
-
-A special error message that represents the parser is not matched.
 
 #### parser
 
