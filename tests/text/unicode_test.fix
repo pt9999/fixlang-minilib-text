@@ -10,7 +10,7 @@ test_utf8_to_utf32_ok = |(a8, a32)| (
     let testname = "test_utf8_to_utf32_ok (" + a32.to_string + ")";
     make_test(testname) $ |_|
     let actual = utf8_to_utf32(a8, Array::empty(0));
-    let _ = *(assert_equal("eq", a32, actual));
+    assert_equal("eq", a32, actual);;
     pure()
 );
 
@@ -35,7 +35,7 @@ test_utf32_to_utf8_ok = |(a32, a8)| (
     let testname = "test_utf32_to_utf8_ok (" + a8.to_string + ")";
     make_test(testname) $ |_|
     let actual = utf32_to_utf8(a32, Array::empty(0));
-    let _ = *(assert_equal("eq", a8, actual));
+    assert_equal("eq", a8, actual);;
     pure()
 );
 
@@ -60,7 +60,7 @@ test_utf16_to_utf32_ok = |(a16, a32)| (
     let testname = "test_utf16_to_utf32_ok (" + a32.to_string + ")";
     make_test(testname) $ |_|
     let actual = utf16_to_utf32(a16, Array::empty(0));
-    let _ = *(assert_equal("eq", a32, actual));
+    assert_equal("eq", a32, actual);;
     pure()
 );
 
@@ -82,7 +82,7 @@ test_utf32_to_utf16_ok = |(a32, a16)| (
     let testname = "test_utf32_to_utf16_ok (" + a16.to_string + ")";
     make_test(testname) $ |_|
     let actual = utf32_to_utf16(a32, Array::empty(0));
-    let _ = *(assert_equal("eq", a16, actual));
+    assert_equal("eq", a16, actual);;
     pure()
 );
 
@@ -109,7 +109,7 @@ test_utf8_enc_dec_ok = |str| (
     let a32 = utf16_to_utf32(a16, Array::empty(0));
     let a8 = utf32_to_utf8(a32, Array::empty(0));
     let actual = a8._unsafe_to_string;
-    let _ = *(assert_equal("eq", str, actual));
+    assert_equal("eq", str, actual);;
     pure()
 );
 

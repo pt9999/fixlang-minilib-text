@@ -371,8 +371,8 @@ namespace Parser {
         str.get_bytes.pop_back.to_iter.fold(
             unit,
             |c, p| do {
-                let _ = *p;
-                let _ = *match_char(c);
+                p;;
+                match_char(c);;
                 pure $ ()
             }
         )
