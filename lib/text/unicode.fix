@@ -2,6 +2,119 @@
 //
 module Minilib.Text.Unicode;
 
+// Non-Null-Terminated String
+type UTFString a = unbox struct {
+    data: Array a
+};
+
+type UTF8String = UTFString U8;
+type UTF16String = UTFString U16;
+type UTF32String = UTFString U32;
+
+namespace UTFString {
+    make: Array a -> UTFString a;
+    make = |data| UTFString { data: data };
+}
+
+impl [a: Eq] UTFString a: Eq {
+    eq = |x, y| x.@data == y.@data;
+}
+
+impl [a: LessThan] UTFString a: LessThan {
+    less_than = |x, y| x.@data < y.@data;
+}
+
+impl [a: LessThanOrEq] UTFString a: LessThanOrEq {
+    less_than_or_eq = |x, y| x.@data <= y.@data;
+}
+
+// TODO: add impl FromBytes, ToBytes -- requires minilib-binary
+// TODO: add impl Hash               -- requires hash
+
+impl UTFString U8: ToString {
+    to_string = |s| s.@data.push_back(0_U8).from_bytes.as_ok;
+}
+
+impl UTFString U16: ToString {
+    to_string = |s| s.to_utf8_string.to_string;
+}
+
+impl UTFString U32: ToString {
+    to_string = |s| s.to_utf8_string.to_string;
+}
+
+trait a: ToUTF8String {
+    to_utf8_string: a -> UTF8String;
+}
+
+impl String: ToUTF8String {
+    to_utf8_string = |s| UTFString { data: s.get_bytes.pop_back };
+}
+
+impl UTFString U8: ToUTF8String {
+    to_utf8_string = |s| s;
+}
+
+impl UTFString U16: ToUTF8String {
+    to_utf8_string = |s| s.to_utf32_string.to_utf8_string;
+}
+
+impl UTFString U32: ToUTF8String {
+    to_utf8_string = |s| make $ utf32_to_utf8(s.@data, []);
+}
+
+trait a: ToUTF16String {
+    to_utf16_string: a -> UTF16String;
+}
+
+impl String: ToUTF16String {
+    to_utf16_string = |s| s.to_utf8_string.to_utf16_string;
+}
+
+impl UTFString U8: ToUTF16String {
+    to_utf16_string = |s| s.to_utf32_string.to_utf16_string;
+}
+
+impl UTFString U16: ToUTF16String {
+    to_utf16_string = |s| s;
+}
+
+impl UTFString U32: ToUTF16String {
+    to_utf16_string = |s| make $ utf32_to_utf16(s.@data, []);
+}
+
+trait a: ToUTF32String {
+    to_utf32_string: a -> UTF32String;
+}
+
+impl String: ToUTF32String {
+    to_utf32_string = |s| s.to_utf8_string.to_utf32_string;
+}
+
+impl UTFString U8: ToUTF32String {
+    to_utf32_string = |s| make $ utf8_to_utf32(s.@data, []);
+}
+
+impl UTFString U16: ToUTF32String {
+    to_utf32_string = |s| make $ utf16_to_utf32(s.@data, []);
+}
+
+impl UTFString U32: ToUTF32String {
+    to_utf32_string = |s| s;
+}
+
+impl UTFString U8: FromString {
+    from_string = |s| ok $ s.to_utf8_string;
+}
+
+impl UTFString U16: FromString {
+    from_string = |s| ok $ s.to_utf16_string;
+}
+
+impl UTFString U32: FromString {
+    from_string = |s| ok $ s.to_utf32_string;
+}
+
 // Convert UTF8 string to UTF32 string. Please specify the output destination buffer.
 utf8_to_utf32: Array U8 -> Array U32 -> Array U32;
 utf8_to_utf32 = |input, output| (
