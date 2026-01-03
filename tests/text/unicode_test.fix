@@ -43,6 +43,15 @@ test_utf32_string_get_size = (
     assert_equal("size", 7, utf32.get_size)
 );
 
+test_utf32_string_is_empty: TestCase;
+test_utf32_string_is_empty = (
+    make_test("test_utf32_string_is_empty") $ |_|
+    let utf32: UTF32String = UTFString::empty;
+    assert_equal("is_empty", true, utf32.is_empty);;
+    let utf32: UTF32String = "aAあいう😊😀".to_utf32_string;
+    assert_equal("is_empty", false, utf32.is_empty)
+);
+
 test_utf32_string_at: TestCase;
 test_utf32_string_at = (
     make_test("test_utf32_string_at") $ |_|
@@ -61,6 +70,16 @@ test_utf32_string_get_sub = (
     assert_equal("get_sub", "あいう", utf32.get_sub(2, 5).to_string);;
     assert_equal("get_sub", "😊😀", utf32.get_sub(5, 7).to_string);;
     pure()
+);
+
+test_utf32_string_additive: TestCase;
+test_utf32_string_additive = (
+    make_test("test_utf32_string_additive") $ |_|
+    let utf32: UTF32String = zero;
+    let utf32: UTF32String = utf32 + "aAあ".to_utf32_string;
+    let utf32: UTF32String = utf32.concat("いう".to_utf32_string);
+    let utf32: UTF32String = utf32 + "😊😀".to_utf32_string;
+    assert_equal("eq", "aAあいう😊😀", utf32.to_string)
 );
 
 test_utf8_to_utf32_ok: (Array U8, Array U32) -> TestCase;
@@ -183,9 +202,11 @@ main: IO ();
 main = (
     [
         test_to_utf8_utf16_utf32_string,
+        test_utf32_string_is_empty,
         test_utf32_string_get_size,
         test_utf32_string_at,
         test_utf32_string_get_sub,
+        test_utf32_string_additive,
         test_utf8_to_utf32,
         test_utf32_to_utf8,
         test_utf16_to_utf32,

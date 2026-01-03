@@ -25,6 +25,18 @@ namespace UTFString {
     make: Array a -> UTFString a;
     make = |array| UTFString { data: array };
 
+    // An empty unicode string.
+    empty: UTFString a;
+    empty = UTFString { data: [] };
+
+    // Returns if the unicode string is empty or not.
+    //
+    // # Parameters
+    //
+    // * `str` - The unicode string to be checked.
+    is_empty : UTFString a -> Bool;
+    is_empty = |s| s.get_size == 0;
+
     // Gets the length of a unicode string (= the count of code units).
     //
     // # Parameters
@@ -51,6 +63,31 @@ namespace UTFString {
     // * `str` - The unicode string to be sliced.
     get_sub: I64 -> I64 -> UTFString a -> UTFString a;
     get_sub = |start, end, s| UTFString { data: s.@data.get_sub(start, end) };
+
+    // Concatenate two unicode strings.
+    //
+    // Note: Since `s1.concat(s2)` puts `s2` after `s1`, `concat(lhs, rhs)` puts `lhs` after `rhs`.
+    //
+    // # Parameters
+    //
+    // * `first` - The first unicode string.
+    // * `second` - The second unicode string.
+    concat : UTFString a -> UTFString a -> UTFString a;
+    concat = |rhs, lhs| (
+        UTFString { data : lhs.@data.append(rhs.@data) }
+    );
+
+    // TODO: add `find`
+}
+
+// An empty unicode string.
+impl UTFString a : Zero {
+    zero = empty;
+}
+
+// Concatenates two unicode strings.
+impl UTFString a: Add {
+    add = |lhs, rhs| lhs.concat(rhs);
 }
 
 impl [a: Eq] UTFString a: Eq {
