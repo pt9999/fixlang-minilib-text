@@ -1,19 +1,56 @@
-// Unicode conversions (UTF8 <-> UTF32 <-> UTF16)
+// Unicode strings and conversions (UTF8/UTF16/UTF32)
 //
 module Minilib.Text.Unicode;
 
-// Non-Null-Terminated String
+// Unicode string type.
+//
+// A unicode string is represented as a non-null-terminated array of code units.
 type UTFString a = unbox struct {
     data: Array a
 };
 
+// A unicode string which is encoded in UTF8.
 type UTF8String = UTFString U8;
+// A unicode string which is encoded in UTF16.
 type UTF16String = UTFString U16;
+// A unicode string which is encoded in UTF32.
 type UTF32String = UTFString U32;
 
 namespace UTFString {
+    // Creates a unicode string from a non-null-terminated array of code units.
+    //
+    // # Parameters
+    //
+    // * `array` - A non-null-terminated array of code units.
     make: Array a -> UTFString a;
-    make = |data| UTFString { data: data };
+    make = |array| UTFString { data: array };
+
+    // Gets the length of a unicode string (= the count of code units).
+    //
+    // # Parameters
+    //
+    // * `str` - The unicode string to be converted.
+    get_size: UTFString a -> I64;
+    get_size = |s| s.@data.get_size;
+
+    // Gets the code unit of a unicode string at the specified index.
+    //
+    // # Parameters
+    //
+    // * `i` - The index of the code unit.
+    // * `str` - The unicode string to be converted.
+    @: I64 -> UTFString a -> a;
+    @ = |i, s| s.@data.@(i);
+
+    // Returns a substring of the specified range.
+    //
+    // # Parameters
+    //
+    // * `start` - The start index of the substring.
+    // * `end` - The end index of the substring.
+    // * `str` - The unicode string to be sliced.
+    get_sub: I64 -> I64 -> UTFString a -> UTFString a;
+    get_sub = |start, end, s| UTFString { data: s.@data.get_sub(start, end) };
 }
 
 impl [a: Eq] UTFString a: Eq {
@@ -114,6 +151,10 @@ impl UTFString U16: FromString {
 impl UTFString U32: FromString {
     from_string = |s| ok $ s.to_utf32_string;
 }
+
+// ----------------------------------------------------------------------------
+// Utility functions
+// ----------------------------------------------------------------------------
 
 // Convert UTF8 string to UTF32 string. Please specify the output destination buffer.
 utf8_to_utf32: Array U8 -> Array U32 -> Array U32;

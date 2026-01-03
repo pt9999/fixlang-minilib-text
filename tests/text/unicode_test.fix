@@ -35,6 +35,33 @@ test_to_utf8_utf16_utf32_string = (
     pure()
 );
 
+test_utf32_string_get_size: TestCase;
+test_utf32_string_get_size = (
+    make_test("test_utf_string_get_size") $ |_|
+    let str = "aAあいう😊😀";
+    let utf32: UTF32String = str.to_utf32_string;
+    assert_equal("size", 7, utf32.get_size)
+);
+
+test_utf32_string_at: TestCase;
+test_utf32_string_at = (
+    make_test("test_utf32_string_at") $ |_|
+    let str = "aAあいう😊😀";
+    let utf32: UTF32String = str.to_utf32_string;
+    assert_equal("at", 0x3042_U32 /* 'あ' */, utf32.@(2));;
+    assert_equal("at", 0x1f600_U32 /* '😀' */, utf32.@(6));;
+    pure()
+);
+
+test_utf32_string_get_sub: TestCase;
+test_utf32_string_get_sub = (
+    make_test("test_utf32_string_get_sub") $ |_|
+    let str = "aAあいう😊😀";
+    let utf32: UTF32String = str.to_utf32_string;
+    assert_equal("get_sub", "あいう", utf32.get_sub(2, 5).to_string);;
+    assert_equal("get_sub", "😊😀", utf32.get_sub(5, 7).to_string);;
+    pure()
+);
 
 test_utf8_to_utf32_ok: (Array U8, Array U32) -> TestCase;
 test_utf8_to_utf32_ok = |(a8, a32)| (
@@ -156,6 +183,9 @@ main: IO ();
 main = (
     [
         test_to_utf8_utf16_utf32_string,
+        test_utf32_string_get_size,
+        test_utf32_string_at,
+        test_utf32_string_get_sub,
         test_utf8_to_utf32,
         test_utf32_to_utf8,
         test_utf16_to_utf32,
