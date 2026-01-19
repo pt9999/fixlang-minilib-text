@@ -2,15 +2,18 @@ module Test;
 
 import Minilib.Testing.UnitTest;
 
+import LocaleTest;
 import SimpleParserTest;
 import UnicodeTest;
+import WideCharTest;
 
 testsuite: TestSuite;
 testsuite = [
+    ("LocaleTest", LocaleTest::main),
     ("SimpleParserTest", SimpleParserTest::main),
     ("UnicodeTest", UnicodeTest::main),
+    ("WideCharTest", WideCharTest::main),
 ];
-
 
 test: IO ();
 test = (
