@@ -1,8 +1,25 @@
 # Minilib.Text.Unicode
 
-Defined in minilib-text@0.6.1
+Defined in minilib-text@0.7.0
 
 Unicode strings and conversions (UTF8/UTF16/UTF32)
+
+An utf-8 encoded `Std::String` can be converted to `UTF8String`, `UTF16String`, `UTF32String`
+by using `to_utf8_string`, `to_utf16_string`, `to_utf32_string`.
+
+`UTF8String`, `UTF16String`, `UTF32String` can be converted to an utf-8 encoded `Std::String`
+by using `to_string`.
+
+`UTF32String` is suitable for working with strings containing Unicode characters.
+
+Example:
+```
+let str = "aAあいう😊😀";                       // an ordinary string (encoded in utf-8)
+let wstr: UTF32String = str.to_utf32_string;     // convert to a wide string
+assert_equal("size", 7, wstr.get_size);;         // number of wide characters
+let wstr = wstr.get_sub(5, 7);                   // get substring of a wide string
+assert_equal("str", "😊😀", wstr.to_string);;   // convert back to an ordinary string
+```
 
 ## Values
 
