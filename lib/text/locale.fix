@@ -5,6 +5,8 @@
 // For details, see the documentation of [Minilib.Text.WideChar](Minilib.Text.WideChar.md) module.
 module Minilib.Text.Locale;
 
+import Minilib.Monad.Error;
+
 // Initialize the program's current locale.
 //
 // This function is equivalent to `setlocale(LC_ALL, "")` in C language.
@@ -21,13 +23,21 @@ init_locale = (
 // - `category_name`: The name of the category. (For example, "LC_ALL", "LC_COLLATE", "LC_CTYPE", "LC_MESSAGES", "LC_MONETARY", "LC_NUMERIC", "LC_TIME")
 // - `locale`: The locale to be set. (For example, "", "C", "en_US.UTF-8", "ja_JP.UTF-8")
 set_locale: String -> String -> IOFail String;
-set_locale = |category_name, value| (
+set_locale = |category_name, locale| (
     clear_errno.lift;;
-    category_name.borrow_c_str_io(|p_name|
-        value.borrow_c_str_io(|p_value|
+    category_name.borrow_c_str_io(|p_category_name|
+        locale.borrow_c_str_io(|p_locale|
             do {
-                let ptr = *FFI_CALL_IO[Ptr minilib_set_locale(Ptr, Ptr), p_name, p_value].lift;
-                if ptr == nullptr { throw("set_locale failed! errno=" + *get_errno.map(to_string).lift) };
+                let ptr = *FFI_CALL_IO[Ptr minilib_set_locale(Ptr, Ptr), p_category_name, p_locale].lift;
+                if ptr == nullptr {
+                    let errno = *get_errno.lift;
+                    throw(
+                        "set_locale failed!"
+                        + " category_name=" + category_name
+                        + " locale=" + locale
+                        + " errno=" + errno.to_string
+                    )
+                };
                 pure $ _unsafe_from_c_str_ptr(ptr)
             }.to_result
         )
@@ -45,11 +55,52 @@ set_locale = |category_name, value| (
 get_locale: String -> IOFail String;
 get_locale = |category_name| (
     clear_errno.lift;;
-    category_name.borrow_c_str_io(|p_name|
+    category_name.borrow_c_str_io(|p_category_name|
         do {
-            let ptr = *FFI_CALL_IO[Ptr minilib_set_locale(Ptr, Ptr), p_name, nullptr].lift;
+            let ptr = *FFI_CALL_IO[Ptr minilib_set_locale(Ptr, Ptr), p_category_name, nullptr].lift;
             if ptr == nullptr { throw("get_locale failed! errno=" + *get_errno.map(to_string).lift) };
             pure $ _unsafe_from_c_str_ptr(ptr)
         }.to_result
     ).from_io_result
 );
+
+// Sets the program's current locale, performs `body`, then restores the original locale.
+//
+// # Parameters
+// - `category_name`: The name of the category. (For example, "LC_ALL", "LC_COLLATE", "LC_CTYPE", "LC_MESSAGES", "LC_MONETARY", "LC_NUMERIC", "LC_TIME")
+// - `locale`: The locale to be set. (For example, "", "C", "en_US.UTF-8", "ja_JP.UTF-8")
+// - `body`: The body
+with_locale: String -> String -> IOFail a -> IOFail a;
+with_locale = |category_name, locale, body| (
+    let saved_locale = *get_locale(category_name);
+    do {
+        set_locale(category_name, locale);;
+        body
+    }
+    .finally(
+        set_locale(category_name, saved_locale);;
+        pure()
+    )
+);
+
+// A constant string that represents the locale category "LC_ALL"
+lc_all: String = "LC_ALL";
+// A constant string that represents the locale category "LC_COLLATE"
+lc_collate: String = "LC_COLLATE";
+// A constant string that represents the locale category "LC_CTYPE"
+lc_ctype: String = "LC_CTYPE";
+// A constant string that represents the locale category "LC_MESSAGES"
+lc_messages: String = "LC_MESSAGES";
+// A constant string that represents the locale category "LC_MONETARY"
+lc_monetary: String = "LC_MONETARY";
+// A constant string that represents the locale category "LC_NUMERIC"
+lc_numeric: String = "LC_NUMERIC";
+// A constant string that represents the locale category "LC_TIME"
+lc_time: String = "LC_TIME";
+
+// A constant string that represents the locale "", which is an implementation-defined native environment.
+locale_default: String = "";
+// A constant string that represents the locale "C".
+locale_C: String = "C";
+// A constant string that represents the locale "C.UTF-8".
+locale_C_UTF8: String = "C.UTF-8";
