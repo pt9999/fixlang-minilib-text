@@ -145,7 +145,6 @@ test_wcswidth = make_table_test("test_wcswidth",
 
 main: IO ();
 main = (
-    init_locale;;
     [
         test_is_alpha,
         test_is_alnum,
@@ -161,5 +160,8 @@ main = (
         test_is_xdigit,
         test_wcwidth,
         test_wcswidth,
-    ].run_test_driver
+    ]
+    // run all tests with LC_ALL=C.UTF-8
+    .map(map(with_locale(lc_all, locale_C_UTF8)))
+    .run_test_driver
 );
