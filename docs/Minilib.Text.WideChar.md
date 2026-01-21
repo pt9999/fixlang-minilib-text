@@ -1,6 +1,6 @@
 # Minilib.Text.WideChar
 
-Defined in minilib-text@0.7.0
+Defined in minilib-text@0.7.1
 
 Wide-character definition and classification.
 
