@@ -93,7 +93,32 @@ namespace UTFString {
         UTFString { data : lhs.@data.append(rhs.@data) }
     );
 
-    // TODO: add `find`
+    // `str.find(token, start_idx)` finds the index where `token` firstly appears in `str` starting from `start_idx`.
+    //
+    // # Parameters
+    //
+    // * `token` - The token to be searched.
+    // * `start_idx` - The index to start searching from.
+    // * `str` - The unicode string to be searched.
+    find : [a: Eq] UTFString a -> I64 -> UTFString a -> Option I64;
+    find = |tok, start, str| (
+        let n = str.get_size;
+        let m = tok.get_size;
+        let str = str.@data;
+        let tok = tok.@data;
+        loop(
+            start, |i|
+            if i >= n { break $ none() };
+            let res = loop(
+                0, |j|
+                if j >= m { break $ true };
+                if str.@(i+j) != tok.@(j) { break $ false };
+                continue $ j + 1
+            );
+            if res { break $ some(i) };
+            continue $ i + 1
+        )
+    );
 }
 
 // An empty unicode string.

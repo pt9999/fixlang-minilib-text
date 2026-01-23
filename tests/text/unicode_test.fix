@@ -72,6 +72,32 @@ test_utf32_string_get_sub = (
     pure()
 );
 
+test_utf32_string_find: TestCase;
+test_utf32_string_find = (
+    make_table_test("test_utf32_string_find",
+        [
+            ("", "", 0, none()),
+            ("", "あ", 0, none()),
+            ("あ", "", 0, some(0)),
+            ("あ", "", 1, none()),
+            ("あ", "あ", 0, some(0)),
+            ("あ", "あ", 1, none()),
+            ("09AZazあア漢😊😀", "漢😊", 0, some(8)),
+            ("09AZazあア漢😊😀", "漢😊", 8, some(8)),
+            ("09AZazあア漢😊😀", "漢😊", 9, none()),
+            ("09AZazあア漢😊😀", "漢😊", 100, none()),
+        ],
+        |(str, tok, start, expected)|
+        let str = str.to_utf32_string;
+        let tok = tok.to_utf32_string;
+        let actual = str.find(tok, start);
+        assert_equal("eq", expected, actual)
+    )
+);
+
+// TODO: test eq, less_than, less_than_or_eq
+
+
 test_utf32_string_additive: TestCase;
 test_utf32_string_additive = (
     make_test("test_utf32_string_additive") $ |_|
@@ -206,6 +232,7 @@ main = (
         test_utf32_string_get_size,
         test_utf32_string_at,
         test_utf32_string_get_sub,
+        test_utf32_string_find,
         test_utf32_string_additive,
         test_utf8_to_utf32,
         test_utf32_to_utf8,
