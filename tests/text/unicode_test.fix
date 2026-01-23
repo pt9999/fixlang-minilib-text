@@ -5,6 +5,7 @@ import Minilib.Text.StringEx;
 import Minilib.Text.Unicode;
 import Minilib.Testing.UnitTest;
 
+// test for `to_string`, `to_utf8_string`, `to_utf16_string`, `to_utf32_string`
 test_to_utf8_utf16_utf32_string: TestCase;
 test_to_utf8_utf16_utf32_string = (
     make_test("test_to_utf8_utf16_utf32_string") $ |_|
@@ -35,12 +36,20 @@ test_to_utf8_utf16_utf32_string = (
     pure()
 );
 
-test_utf32_string_get_size: TestCase;
-test_utf32_string_get_size = (
-    make_test("test_utf_string_get_size") $ |_|
-    let str = "aAあいう😊😀";
-    let utf32: UTF32String = str.to_utf32_string;
-    assert_equal("size", 7, utf32.get_size)
+test_utf32_string_make: TestCase;
+test_utf32_string_make = (
+    make_test("test_utf32_string_make") $ |_|
+    let actual: UTF32String = UTFString::make([12354_U32, 12356_U32, 12358_U32]);
+    let expected = "あいう".to_utf32_string;
+    assert_equal("eq", expected, actual)
+);
+
+test_utf32_string_empty: TestCase;
+test_utf32_string_empty = (
+    make_test("test_utf32_string_empty") $ |_|
+    let actual: UTF32String = UTFString::empty;
+    let expected = "".to_utf32_string;
+    assert_equal("eq", expected, actual)
 );
 
 test_utf32_string_is_empty: TestCase;
@@ -52,6 +61,15 @@ test_utf32_string_is_empty = (
     assert_equal("is_empty", false, utf32.is_empty)
 );
 
+test_utf32_string_get_size: TestCase;
+test_utf32_string_get_size = (
+    make_test("test_utf_string_get_size") $ |_|
+    let str = "aAあいう😊😀";
+    let utf32: UTF32String = str.to_utf32_string;
+    assert_equal("size", 7, utf32.get_size)
+);
+
+// test for `@`
 test_utf32_string_at: TestCase;
 test_utf32_string_at = (
     make_test("test_utf32_string_at") $ |_|
@@ -70,6 +88,16 @@ test_utf32_string_get_sub = (
     assert_equal("get_sub", "あいう", utf32.get_sub(2, 5).to_string);;
     assert_equal("get_sub", "😊😀", utf32.get_sub(5, 7).to_string);;
     pure()
+);
+
+test_utf32_string_concat: TestCase;
+test_utf32_string_concat = (
+    make_test("test_utf32_string_concat") $ |_|
+    let a = "あいう".to_utf32_string;
+    let b = "😊😀".to_utf32_string;
+    let expected = "あいう😊😀".to_utf32_string;
+    let actual = a.concat(b);
+    assert_equal("eq", expected, actual)
 );
 
 test_utf32_string_find: TestCase;
@@ -95,12 +123,13 @@ test_utf32_string_find = (
     )
 );
 
-test_utf32_string_additive: TestCase;
-test_utf32_string_additive = (
-    make_test("test_utf32_string_additive") $ |_|
+// test for `Zero`, `Add`
+test_utf32_string_zero_add: TestCase;
+test_utf32_string_zero_add = (
+    make_test("test_utf32_string_zero_add") $ |_|
     let utf32: UTF32String = zero;
     let utf32: UTF32String = utf32 + "aAあ".to_utf32_string;
-    let utf32: UTF32String = utf32.concat("いう".to_utf32_string);
+    let utf32: UTF32String = utf32 + "いう".to_utf32_string;
     let utf32: UTF32String = utf32 + "😊😀".to_utf32_string;
     assert_equal("eq", "aAあいう😊😀", utf32.to_string)
 );
@@ -288,12 +317,15 @@ main: IO ();
 main = (
     [
         test_to_utf8_utf16_utf32_string,
+        test_utf32_string_make,
+        test_utf32_string_empty,
         test_utf32_string_is_empty,
         test_utf32_string_get_size,
         test_utf32_string_at,
         test_utf32_string_get_sub,
+        test_utf32_string_concat,
         test_utf32_string_find,
-        test_utf32_string_additive,
+        test_utf32_string_zero_add,
         test_utf32_string_eq,
         test_utf32_string_less_than,
         test_utf32_string_less_than_or_eq,
