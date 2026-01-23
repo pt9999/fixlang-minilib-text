@@ -1,6 +1,6 @@
 # Minilib.Text.Unicode
 
-Defined in minilib-text@0.7.1
+Defined in minilib-text@0.7.2
 
 Unicode strings and conversions (UTF8/UTF16/UTF32)
 
@@ -105,6 +105,18 @@ Type: `Minilib.Text.Unicode::UTFString a`
 
 An empty unicode string.
 
+#### find
+
+Type: `[a : Std::Eq] Minilib.Text.Unicode::UTFString a -> Std::I64 -> Minilib.Text.Unicode::UTFString a -> Std::Option Std::I64`
+
+`str.find(token, start_idx)` finds the index where `token` firstly appears in `str` starting from `start_idx`.
+
+##### Parameters
+
+* `token` - The token to be searched.
+* `start_idx` - The index to start searching from.
+* `str` - The unicode string to be searched.
+
 #### get_size
 
 Type: `Minilib.Text.Unicode::UTFString a -> Std::I64`
@@ -146,6 +158,40 @@ Creates a unicode string from a non-null-terminated array of code units.
 ##### Parameters
 
 * `array` - A non-null-terminated array of code units.
+
+#### pop_back
+
+Type: `Minilib.Text.Unicode::UTFString a -> Minilib.Text.Unicode::UTFString a`
+
+Pops a code unit at the back of a unicode string.
+If the unicode string is empty, this function does nothing.
+
+##### Parameters
+
+* `str` - The unicode string to be modified.
+
+#### push_back
+
+Type: `a -> Minilib.Text.Unicode::UTFString a -> Minilib.Text.Unicode::UTFString a`
+
+Pushes a code unit to the back of a unicode string.
+
+##### Parameters
+
+* `c` - The code unit.
+* `str` - The unicode string to be modified.
+
+#### set
+
+Type: `Std::I64 -> a -> Minilib.Text.Unicode::UTFString a -> Minilib.Text.Unicode::UTFString a`
+
+Sets the code unit of a unicode string at the specified index.
+
+##### Parameters
+
+* `i` - The index of the code unit.
+* `c` - The code unit.
+* `str` - The unicode string to be modified.
 
 ## Types and aliases
 
@@ -241,9 +287,17 @@ Concatenates two unicode strings.
 
 ### impl `[a : Std::Eq] Minilib.Text.Unicode::UTFString a : Std::Eq`
 
-### impl `[a : Std::LessThan] Minilib.Text.Unicode::UTFString a : Std::LessThan`
+Compare two unicode strings as an array of code units.
 
-### impl `[a : Std::LessThanOrEq] Minilib.Text.Unicode::UTFString a : Std::LessThanOrEq`
+### impl `[a : Std::Eq, a : Std::LessThan] Minilib.Text.Unicode::UTFString a : Std::LessThan`
+
+Compare two unicode strings as an array of code units.
+NOTE: This is NOT affected by the `LC_COLLATE` locale, since the order of code units is not affected by the collation.
+
+### impl `[a : Std::Eq, a : Std::LessThanOrEq] Minilib.Text.Unicode::UTFString a : Std::LessThanOrEq`
+
+Compare two unicode strings as an array of code units.
+NOTE: This is NOT affected by the `LC_COLLATE` locale, since the order of code units is not affected by the collation.
 
 ### impl `Minilib.Text.Unicode::UTFString a : Std::Zero`
 

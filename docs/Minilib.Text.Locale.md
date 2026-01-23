@@ -1,6 +1,6 @@
 # Minilib.Text.Locale
 
-Defined in minilib-text@0.7.1
+Defined in minilib-text@0.7.2
 
 Locale management functions.
 
@@ -32,7 +32,7 @@ Type: `Std::IO ()`
 
 Initialize the program's current locale.
 
-This function is equivalent to `setlocale(LC_ALL, "")` in C language.
+This function is equivalent to `setlocale("LC_ALL", "")`, ignoring the return value and/or any errors.
 
 #### lc_all
 

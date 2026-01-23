@@ -1,6 +1,6 @@
 # Minilib.Text.WideChar
 
-Defined in minilib-text@0.7.1
+Defined in minilib-text@0.7.2
 
 Wide-character definition and classification.
 
@@ -9,12 +9,27 @@ A wide character is of type `WideChar`.
 You can check whether a wide character has certain character properties
 using classification functions such as `WideChar::is_alpha`.
 
-Note: The results of classification functions are affected by the `LC_TYPE` locale, so
-you may need to call `Locale::init_locale` first.
+You can also get the width of a wide character or a wide string
+using functions such as `wcwidth`, `wcswidth`, `get_width`.
+
+Note: The results of functions in this module are affected by the `LC_TYPE` locale, so
+you may need to call `Locale::init_locale` or `Locale::set_locale` first.
 
 ## Values
 
 ### namespace Minilib.Text.WideChar
+
+#### get_width
+
+Type: `[s : Minilib.Text.Unicode::ToUTF32String] s -> Std::I64`
+
+Returns the width of a wide string.
+A wide character in half-width form counts as 1, a wide character in full-width form counts as 2.
+Returns -1 if the wide string contains non-printable characters.
+
+##### Parameters
+
+* `str` - A string which can be converted to `UTF32String`.
 
 #### is_alnum
 
