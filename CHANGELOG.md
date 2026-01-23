@@ -1,3 +1,7 @@
+## 0.7.2
+### Added
+- Minilib.Text.WideChar: Added `get_width`.
+
 ## 0.7.1
 ### Added
 - Minilib.Text.Locale: Added `with_locale`, `lc_*`, `locale_*`.
