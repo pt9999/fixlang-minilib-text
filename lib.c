@@ -4,11 +4,6 @@
 #include <errno.h>
 #include <string.h>
 
-void minilib_init_locale()
-{
-    setlocale(LC_ALL, "");
-}
-
 struct locale_category_def {
     const char* name;
     int category;

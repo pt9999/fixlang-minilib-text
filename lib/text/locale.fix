@@ -9,10 +9,12 @@ import Minilib.Monad.Error;
 
 // Initialize the program's current locale.
 //
-// This function is equivalent to `setlocale(LC_ALL, "")` in C language.
+// This function is equivalent to `setlocale("LC_ALL", "")`, ignoring the return value and/or any errors.
 init_locale: IO ();
 init_locale = (
-    FFI_CALL_IO[() minilib_init_locale()]
+    set_locale(Locale::lc_all, Locale::locale_default)
+    .forget
+    .try(|errmsg| pure())
 );
 
 // Sets the program's current locale.
