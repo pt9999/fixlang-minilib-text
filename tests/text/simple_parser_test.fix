@@ -12,12 +12,16 @@ test_stream_readall = (
     let str = "hello\nworld\n";
     let s: Stream = *(from_result $ str.from_string);
     let s = s.set_filename("hello.txt");
-    let (arr, s) = s.read_all;
     assert_equal("filename", "hello.txt", s.@filename);;
+    assert_equal("line", 1, s.@line);;
+    assert_equal("column", 0, s.@column);;
+    assert_equal("position", 0, s.@position);;
+    let (arr, s) = s.read_all;
     let result_str = String::_unsafe_from_c_str (arr.push_back(0_U8));
     assert_equal("array", result_str, str);;
-    assert_equal("line", 2, s.@line);;
+    assert_equal("line", 3, s.@line);;
     assert_equal("column", 0, s.@column);;
+    assert_equal("position", 12, s.@position);;
     pure()
 );
 

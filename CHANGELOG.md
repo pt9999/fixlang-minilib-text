@@ -3,6 +3,7 @@
 - Minilib.Text.WideChar: Added `get_width`.
 ### Changed
 - Minilib.Text.Locale: Changed `init_locale` implementation.
+- Minilib.Text.SimpleParser: Fixed a bug where the first line number of `Stream` was 0.
 
 ## 0.7.1
 ### Added
