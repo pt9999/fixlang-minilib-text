@@ -131,15 +131,20 @@ impl UTFString a: Add {
     add = |lhs, rhs| lhs.concat(rhs);
 }
 
+// Compare two unicode strings as an array of code units.
 impl [a: Eq] UTFString a: Eq {
     eq = |x, y| x.@data == y.@data;
 }
 
-impl [a: LessThan] UTFString a: LessThan {
+// Compare two unicode strings as an array of code units.
+// NOTE: This is NOT affected by the `LC_COLLATE` locale, since the order of code units is not affected by the collation.
+impl [a:Eq, a: LessThan] UTFString a: LessThan {
     less_than = |x, y| x.@data < y.@data;
 }
 
-impl [a: LessThanOrEq] UTFString a: LessThanOrEq {
+// Compare two unicode strings as an array of code units.
+// NOTE: This is NOT affected by the `LC_COLLATE` locale, since the order of code units is not affected by the collation.
+impl [a:Eq, a: LessThanOrEq] UTFString a: LessThanOrEq {
     less_than_or_eq = |x, y| x.@data <= y.@data;
 }
 

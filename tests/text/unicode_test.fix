@@ -95,9 +95,6 @@ test_utf32_string_find = (
     )
 );
 
-// TODO: test eq, less_than, less_than_or_eq
-
-
 test_utf32_string_additive: TestCase;
 test_utf32_string_additive = (
     make_test("test_utf32_string_additive") $ |_|
@@ -107,6 +104,69 @@ test_utf32_string_additive = (
     let utf32: UTF32String = utf32 + "😊😀".to_utf32_string;
     assert_equal("eq", "aAあいう😊😀", utf32.to_string)
 );
+
+test_utf32_string_eq: TestCase;
+test_utf32_string_eq = (
+    make_table_test("test_utf32_string_eq",
+        [
+            ("", "", true),
+            ("", "a", false),
+            ("aAあいう😊😀", "aAあいう😊😀", true),
+            ("aAあいう😊😀", "aAあいう😊😊", false),
+        ],
+        |(a, b, expected)|
+        let a = a.to_utf32_string;
+        let b = b.to_utf32_string;
+        let actual = a == b;
+        assert_equal("eq", expected, actual)
+    )
+);
+
+test_utf32_string_less_than: TestCase;
+test_utf32_string_less_than = (
+    make_table_test("test_utf32_string_less_than",
+        [
+            ("", "", false),
+            ("", "a", true),
+            ("a", "", false),
+            ("ぁぃぅ", "あいう", true),
+            ("あいう", "ぁぃぅ", false),
+            ("АБВ", "あいう", true),
+            ("😀", "😊", true),
+            ("aAあいう😊😀", "aAあいう😊😊", true),
+            ("aAあいう😊😀", "aAあいう😊😀", false),
+        ],
+        |(a, b, expected)|
+        let a = a.to_utf32_string;
+        let b = b.to_utf32_string;
+        let actual = a < b;
+        assert_equal("eq", expected, actual)
+    )
+);
+
+test_utf32_string_less_than_or_eq: TestCase;
+test_utf32_string_less_than_or_eq = (
+    make_table_test("test_utf32_string_less_than_or_eq",
+        [
+            ("", "", true),
+            ("", "a", true),
+            ("a", "", false),
+            ("ぁぃぅ", "あいう", true),
+            ("あいう", "ぁぃぅ", false),
+            ("АБВ", "あいう", true),
+            ("😀", "😊", true),
+            ("aAあいう😊😀", "aAあいう😊😊", true),
+            ("aAあいう😊😀", "aAあいう😊😀", true),
+        ],
+        |(a, b, expected)|
+        let a = a.to_utf32_string;
+        let b = b.to_utf32_string;
+        let actual = a <= b;
+        assert_equal("eq", expected, actual)
+    )
+);
+
+//----------------------------------------------------------------------------
 
 test_utf8_to_utf32_ok: (Array U8, Array U32) -> TestCase;
 test_utf8_to_utf32_ok = |(a8, a32)| (
@@ -234,6 +294,9 @@ main = (
         test_utf32_string_get_sub,
         test_utf32_string_find,
         test_utf32_string_additive,
+        test_utf32_string_eq,
+        test_utf32_string_less_than,
+        test_utf32_string_less_than_or_eq,
         test_utf8_to_utf32,
         test_utf32_to_utf8,
         test_utf16_to_utf32,
