@@ -123,6 +123,54 @@ test_utf32_string_find = (
     )
 );
 
+test_utf32_string_push_back: TestCase;
+test_utf32_string_push_back = (
+    make_table_test("test_utf32_string_push_back",
+        [
+            ("", "あ", "あ"),
+            ("😊😀", "😀", "😊😀😀"),
+        ],
+        |(str, c, expected)|
+        let str = str.to_utf32_string;
+        let c = c.to_utf32_string.@(0);
+        let expected = expected.to_utf32_string;
+        let actual = str.push_back(c);
+        assert_equal("eq", expected, actual)
+    )
+);
+
+test_utf32_string_pop_back: TestCase;
+test_utf32_string_pop_back = (
+    make_table_test("test_utf32_string_pop_back",
+        [
+            ("", ""),
+            ("あいう", "あい"),
+            ("😊😀😀", "😊😀"),
+        ],
+        |(str, expected)|
+        let str = str.to_utf32_string;
+        let expected = expected.to_utf32_string;
+        let actual = str.pop_back;
+        assert_equal("eq", expected, actual)
+    )
+);
+
+test_utf32_string_set: TestCase;
+test_utf32_string_set = (
+    make_table_test("test_utf32_string_set",
+        [
+            ("abcde", 2, "😀", "ab😀de"),
+            ("あいうえお", 2, "😀", "あい😀えお"),
+        ],
+        |(str, i, c, expected)|
+        let str = str.to_utf32_string;
+        let c = c.to_utf32_string.@(0);
+        let expected = expected.to_utf32_string;
+        let actual = str.set(i, c);
+        assert_equal("eq", expected, actual)
+    )
+);
+
 // test for `Zero`, `Add`
 test_utf32_string_zero_add: TestCase;
 test_utf32_string_zero_add = (
@@ -325,6 +373,9 @@ main = (
         test_utf32_string_get_sub,
         test_utf32_string_concat,
         test_utf32_string_find,
+        test_utf32_string_push_back,
+        test_utf32_string_pop_back,
+        test_utf32_string_set,
         test_utf32_string_zero_add,
         test_utf32_string_eq,
         test_utf32_string_less_than,

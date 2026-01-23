@@ -119,6 +119,34 @@ namespace UTFString {
             continue $ i + 1
         )
     );
+
+    // Pushes a code unit to the back of a unicode string.
+    //
+    // # Parameters
+    //
+    // * `c` - The code unit.
+    // * `str` - The unicode string to be modified.
+    push_back: a -> UTFString a -> UTFString a;
+    push_back = |c, s| s.mod_data(push_back(c));
+
+    // Pops a code unit at the back of a unicode string.
+    // If the unicode string is empty, this function does nothing.
+    //
+    // # Parameters
+    //
+    // * `str` - The unicode string to be modified.
+    pop_back: UTFString a -> UTFString a;
+    pop_back = |s| s.mod_data(pop_back);
+
+    // Sets the code unit of a unicode string at the specified index.
+    //
+    // # Parameters
+    //
+    // * `i` - The index of the code unit.
+    // * `c` - The code unit.
+    // * `str` - The unicode string to be modified.
+    set: I64 -> a -> UTFString a -> UTFString a;
+    set = |i, c, s| s.mod_data(set(i, c));
 }
 
 // An empty unicode string.
