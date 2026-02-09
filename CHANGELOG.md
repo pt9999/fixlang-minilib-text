@@ -1,3 +1,7 @@
+## 0.8.0
+### Changed
+- fixproj.toml: Bumped `fix_version` to 1.3.0. Depends on minilib-common@0.12.0.
+
 ## 0.7.2
 ### Added
 - Minilib.Text.Unicode: Added `find`, `push_back`, `pop_back`, `set`.
