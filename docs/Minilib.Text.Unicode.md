@@ -1,6 +1,6 @@
 # Minilib.Text.Unicode
 
-Defined in minilib-text@0.7.3
+Defined in minilib-text@0.8.0
 
 Unicode strings and conversions (UTF8/UTF16/UTF32)
 
