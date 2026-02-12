@@ -44,6 +44,31 @@ test_utf32_string_make = (
     assert_equal("eq", expected, actual)
 );
 
+test_utf32_string_from_array: TestCase;
+test_utf32_string_from_array = (
+    make_test("test_utf32_string_from_array") $ |_|
+    let actual: UTF32String = UTFString::from_array([12354_U32, 12356_U32, 12358_U32]);
+    let expected = "あいう".to_utf32_string;
+    assert_equal("eq", expected, actual)
+);
+
+test_utf32_string_to_array: TestCase;
+test_utf32_string_to_array = (
+    make_test("test_utf32_string_to_array") $ |_|
+    let wstr = "あいう".to_utf32_string;
+    let actual = wstr.to_array;
+    let expected = [12354_U32, 12356_U32, 12358_U32];
+    assert_equal("eq", expected, actual)
+);
+
+test_utf32_string_from_code_unit: TestCase;
+test_utf32_string_from_code_unit = (
+    make_test("test_utf32_string_from_code_unit") $ |_|
+    let actual: UTF32String = UTFString::from_code_unit(12354_U32);
+    let expected = "あ".to_utf32_string;
+    assert_equal("eq", expected, actual)
+);
+
 test_utf32_string_empty: TestCase;
 test_utf32_string_empty = (
     make_test("test_utf32_string_empty") $ |_|
@@ -366,6 +391,9 @@ main = (
     [
         test_to_utf8_utf16_utf32_string,
         test_utf32_string_make,
+        test_utf32_string_from_array,
+        test_utf32_string_to_array,
+        test_utf32_string_from_code_unit,
         test_utf32_string_empty,
         test_utf32_string_is_empty,
         test_utf32_string_get_size,

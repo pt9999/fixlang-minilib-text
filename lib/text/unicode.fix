@@ -41,6 +41,22 @@ namespace UTFString {
     make: Array a -> UTFString a;
     make = |array| UTFString { data: array };
 
+    // `UTFString::from_array` is a synonym of `UTFString::make`.
+    from_array: Array a -> UTFString a;
+    from_array = UTFString::make;
+
+    // `UTFString::to_array` is a synonym of `UTFString::@data`.
+    to_array: UTFString a -> Array a;
+    to_array = UTFString::@data;
+
+    // Creates a unicode string from a single code unit.
+    //
+    // # Parameters
+    //
+    // * `c` - A code unit.
+    from_code_unit: a -> UTFString a;
+    from_code_unit = |c| UTFString::make([c]);
+
     // An empty unicode string.
     empty: UTFString a;
     empty = UTFString { data: [] };

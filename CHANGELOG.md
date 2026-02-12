@@ -1,3 +1,7 @@
+## 0.8.1
+### Added
+- Minilib.Text.Unicode: Added `from_array`, `to_array`, `from_code_unit`.
+
 ## 0.8.0
 ### Changed
 - fixproj.toml: Bumped `fix_version` to 1.3.0. Depends on minilib-common@0.12.0.
