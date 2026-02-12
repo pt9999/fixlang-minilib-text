@@ -1,5 +1,6 @@
 ## 0.8.1
 ### Added
+- Added Minilib.Text.WParser.
 - Minilib.Text.Unicode: Added `from_array`, `to_array`, `from_code_unit`.
 
 ## 0.8.0

@@ -6,6 +6,7 @@ import LocaleTest;
 import SimpleParserTest;
 import UnicodeTest;
 import WideCharTest;
+import WParserTest;
 
 testsuite: TestSuite;
 testsuite = [
@@ -13,6 +14,7 @@ testsuite = [
     ("SimpleParserTest", SimpleParserTest::main),
     ("UnicodeTest", UnicodeTest::main),
     ("WideCharTest", WideCharTest::main),
+    ("WParserTest", WParserTest::main),
 ];
 
 test: IO ();

@@ -1,0 +1,417 @@
+// Wide-character text parser. Customizable by monadic operations.
+// - Stream of wide-characters
+// - Basic parsers such as wide-character matching
+// - Create complex parsers with composition
+module Minilib.Text.WParser;
+
+import Minilib.Text.Unicode;
+import Minilib.Text.WideChar;
+import Minilib.Text.StringEx;
+
+namespace WStream {
+    // A wide-character iterator that stores the file name, line number, column number,
+    // and offset from the beginning of the file.
+    type WStream = unbox struct {
+        filename: Path,       // File name (empty if no file name is set)
+        line: I64,              // Line number
+        column: I64,            // Column number
+        position: I64,          // Stream position from the beginning of the file
+        array: Array WideChar     // The array of wide-characters
+    };
+
+    // An empty WStream.
+    empty: WStream;
+    empty = WStream {
+        filename: "",
+        line: 1,
+        column: 0,
+        position: 0,
+        array: []
+    };
+
+    // Creates a stream from specified string.
+    make: [str: ToUTF32String] str -> WStream;
+    make = |str| (
+        let wstr = str.to_utf32_string;
+        WStream::empty.set_array(wstr.to_array)
+    );
+
+    // `stream.advance` gets next wide-character and increment the stream position.
+    advance: WStream -> Option (WideChar, WStream);
+    advance = |s| (
+        let pos = s.@position;
+        if pos >= s.@array.get_size { none () };
+        let wc = s.@array.@(pos);
+        // eval debug_eprintln("advance: wc="+wc.to_string + " pos=" + s.@position.to_string);
+        let s = if wc == '\n'.to_U32 {
+            s.set_line(s.@line + 1).set_column(0)
+        } else {
+            s.set_column(s.@column + 1)
+        };
+        let s = s.set_position(pos + 1);
+        pure $ (wc, s)
+    );
+
+    // `stream.read_all` reads all wide-characters to the end of stream.
+    read_all: WStream -> (Array WideChar, WStream);
+    read_all = |s| (
+        let arr = Array::empty(100);
+        loop(
+            (arr, s), |(arr, s)|
+            let opt = s.advance;
+            if opt.is_none {
+                break $ (arr, s)
+            };
+            let (wc, s) = opt.as_some;
+            let arr = arr.push_back(wc);
+            continue $ (arr, s)
+        )
+    );
+
+    // `stream.read_wstring(n)` reads at most `n` wide-characters and convert them to a wide-string.
+    read_wstring: I64 -> WStream -> UTF32String;
+    read_wstring = |n, s| (
+        let pos = s.@position;
+        let end = min(s.@array.get_size, pos + n);
+        let arr = s.@array.get_sub(pos, end);
+        UTFString::from_array $ arr
+    );
+
+    // `start_stream.read_wstring_between(end_stream)` reads wide-characters from `start_stream` to `end_stream`
+    //  and convert them to a wide-string.
+    read_wstring_between: WStream -> WStream -> UTF32String;
+    read_wstring_between = |end_stream, start_stream| (
+        let n = end_stream.@position - start_stream.@position;
+        if n < 0 {
+            end_stream.read_wstring(-n)  // swapped
+        };
+        start_stream.read_wstring(n)
+    );
+
+    // `stream.error(msg)` reports an error along with where it occurred.
+    error: ErrMsg -> WStream -> Result ErrMsg a;
+    error = |msg, s| (
+        let location_msg =
+            if s.@filename == "" { "" } else { s.@filename + " " } +
+            "line " + s.@line.to_string +
+            ", column " + s.@column.to_string +
+            ": ";
+        err $ location_msg + msg
+    );
+}
+
+// Creates a stream from a string.
+impl WStream: FromString {
+    from_string = |str| (
+        pure $ WStream::make(str)
+    );
+}
+
+// Converts a stream to a string, for example `"WStream(pos=1001)"`
+impl WStream: ToString {
+    to_string = |s| (
+        "WStream(pos=" + s.@position.to_string + ")"
+    );
+}
+
+// A special error message that represents the wparser is not matched.
+_NotMatch: ErrMsg;
+_NotMatch = "NotMatch";
+
+// A type of wide-character stream parser.
+//
+// This is a function that receive a stream, parse it, and
+// return the parsed value and the next stream position.
+type WParser a = unbox struct { data: WStream -> Result ErrMsg (a, WStream) };
+
+namespace WParser {
+    // A function that creates a parser based on the parsing function.
+    wparser: (WStream -> Result ErrMsg (a, WStream)) -> WParser a;
+    wparser = |f| WParser { data: f };
+
+    // Apply a stream to a parser and return the parsed value and the next stream position.
+    run_wparser: WStream -> WParser a -> Result ErrMsg (a, WStream);
+    run_wparser = |s, p| p.@data $ s;
+
+    // Apply a stream to a parser and return the parsed value.
+    eval_wparser: WStream -> WParser a -> Result ErrMsg a;
+    eval_wparser = |s, p| p.run_wparser.map(Tuple2::@0);
+
+    // Create a stream from a string, then apply this stream to a parser
+    // and return the parsed value and the next stream position.
+    run_wparser_str: [str: ToUTF32String] str -> WParser a -> Result ErrMsg (a, WStream);
+    run_wparser_str = |str, p|
+        let s: WStream = WStream::make(str);   //*(from_string(str));
+        p.run_wparser(s);
+
+    // Create a stream from a string, then apply this stream to a parser
+    // and return the parsed value.
+    eval_wparser_str: [str: ToUTF32String] str -> WParser a -> Result ErrMsg a;
+    eval_wparser_str = |str, p| (
+        p.run_wparser_str(str).map(Tuple2::@0)
+    );
+}
+
+impl WParser: Functor {
+    map = |f, p| wparser $ |s| (
+        let (a, s) = *(p.run_wparser(s));
+        pure $ (f(a), s)
+    );
+}
+
+impl WParser: Monad {
+    pure = |a| wparser $ |s| ok $ (a, s);
+    bind = |f, pa| (
+        wparser $ |s|
+        let res = (pa.run_wparser(s));
+        let (a, s) = *res;
+        let pb = f(a);
+        pb.run_wparser(s)
+    );
+}
+
+namespace WParser {
+    // `wparser.map_result(f)` maps the parser result with `f`, possibly reports
+    // an error message.
+    map_result: (a -> Result ErrMsg b) -> WParser a -> WParser b;
+    map_result = |f, p| wparser $ |s| (
+            let (a, s) = *(p.run_wparser(s));
+            let res = f(a);
+            if res.is_err {
+                err $ res.as_err
+            };
+            ok $ (res.as_ok, s)
+    );
+
+    // Prints the parser result.
+    debug: [a: ToString] ErrMsg -> WParser a -> WParser a;
+    debug = |msg, p| wparser $ |s| (
+        eval debug_println(msg + ": begin");
+        let res = p.run_wparser(s);
+        eval debug_println(msg + ": end res=" + res.to_string);
+        res
+    );
+
+    // Match zero-length wide-string.
+    unit: WParser ();
+    unit = pure $ ();
+
+    // Returns the current stream position.
+    get_stream: WParser WStream;
+    get_stream = wparser $ |s| ok $ (s, s);
+
+    // Checks whether the parsed result of the specified WParser satisfies the specified conditions.
+    // Raises a `_NotMatch` error if the specified condition is not met.
+    filter: (a -> Bool) -> WParser a -> WParser a;
+    filter = |f, p| wparser $ |s| (
+        let (a, next) = *(p.run_wparser(s));
+        if !f(a) {
+            err $ _NotMatch
+        };
+        pure $ (a, next)
+    );
+
+    // If the first WParser raises a `_NotMatch` error, tries the second WParser.
+    // Note that `pa1.or_else(pa2)` is interpreted as `or_else(pa2, pa1)`,
+    // and  that `pa1.or_else $ pa2` is interpreted as `or_else(pa1, pa2)`.
+    or_else: WParser a -> WParser a -> WParser a;
+    or_else = |pa2, pa1| wparser $ |s| (
+        let res = pa1.run_wparser(s);
+        if res.is_ok {
+            pure $ res.as_ok
+        };
+        if res.as_err != _NotMatch {
+            err $ res.as_err
+        };
+        pa2.run_wparser(s)
+    );
+
+    // Flipped version of `or_else`.
+    // `pa1.or_elseF $ pa2` is equivalent to `pa1.or_else(pa2)`.
+    or_elseF: WParser a -> WParser a -> WParser a;
+    or_elseF = |pa1, pa2| pa1.or_else(pa2);
+
+    // If the WParser reports any error (including `_NotMatch`),
+    // raises the specified string as an error.
+    or_error: ErrMsg -> WParser a -> WParser a;
+    or_error = |msg, p| wparser $ |s| (
+        let res = p.run_wparser(s);
+        if res.is_ok {
+            pure $ res.as_ok
+        };
+        s.error(msg)
+    );
+
+    // Raises the specified string as an error.
+    error_parser: ErrMsg -> WParser a;
+    error_parser = |msg| wparser $ |s| (
+        s.error(msg)
+    );
+
+    // Raises a `_NotMatch` error.
+    not_match: WParser a;
+    not_match = wparser $ |s| (
+        err $ _NotMatch
+    );
+
+    // Repeats matches as many as possible. The parse result is
+    // an array of successful matches.
+    // If a _NotMatch error is raised, returns as success.
+    // If an error other than _NotMatch is raised, reports that error.
+    repeat: WParser a -> WParser (Array a);
+    repeat = |p| wparser $ |s| (
+        let array = Array::empty(100);
+        loop(
+            (array, s), |(array, s)|
+            let old_position = s.@position;
+            let res = p.run_wparser(s);
+            if res.is_err {
+                if res.as_err != _NotMatch {
+                    break $ err $ res.as_err
+                };
+                break $ pure $ (array, s)
+            };
+            let (a, s) = res.as_ok;
+            if s.@position == old_position {
+                // Avoid infinite loop. (fool-proof)
+                break $ pure $ (array, s)
+            };
+            let array = array.push_back(a);
+            continue $ (array, s)
+        )
+    );
+
+    // Synonym for `repeat`.
+    zero_or_more: WParser a -> WParser (Array a);
+    zero_or_more = repeat;
+
+    // Same as `zero_or_more`, but raises a _NotMatch error
+    // if the array length is zero.
+    one_or_more: WParser a -> WParser (Array a);
+    one_or_more = |p| (
+        repeat(p).filter(|array| array.get_size >= 1)
+    );
+
+    // `p.if_exists` returns `some(x)` if `p` returns `x` as a parse result,
+    // or `none()` if `p` does not match.
+    if_exists: WParser a -> WParser (Option a);
+    if_exists = |p| (
+        p.map(some).or_else(pure $ none())
+    );
+
+    // Matches zero-length string at the end of stream.
+    match_end_of_stream: WParser ();
+    match_end_of_stream = wparser $ |s| (
+        if s.advance.is_some {
+            s.error("Missing EOS")
+        };
+        pure $ ((), s)
+    );
+
+    // Matches any single wide-character. The parsed result is
+    // a single matched wide-character.
+    // If the match fails (eg. the end of stream), a `_NotMatch` error is raised.
+    match_any_wchar: WParser WideChar;
+    match_any_wchar = wparser $ |s| (
+        s.advance.map_or(
+            err $ _NotMatch,
+            |(wc, next)| pure $ (wc, next)
+        )
+    );
+
+    // Matches a single wide-character specified by the argument.
+    // The parsed result is nothing.
+    // If the match fails, a `_NotMatch` error is raised.
+    match_wchar: WideChar -> WParser ();
+    match_wchar = |wchr| wparser $ |s| (
+        s.advance.map_or(
+            err $ _NotMatch,
+            |(wc, next)| if wc != wchr { err $ _NotMatch } else { pure $ ((), next) }
+        )
+    );
+
+/*
+    // Obsolete: use `match_wchar(wc).if_exists`.
+    //
+    // Matches a single wide-character if it exists.
+    // The parsed result is `some(wc)` if it exists,
+    // `none()` if it does not exist.
+    match_wchar_if_exists: WideChar -> WParser (Option WideChar);
+    match_wchar_if_exists = |wc| (
+        match_any_wchar.filter(|c1| c1 == wc).map(some).or_else(pure $ none())
+    );
+*/
+
+    // Matches a wide-character which is included in the specified string.
+    // The parsed result is a string consisting of the single matched wide-character.
+    // If the match fails, a `_NotMatch` error is raised.
+    match_one_of_wchar: [str: ToUTF32String] str -> WParser UTF32String;
+    match_one_of_wchar = |str| do {
+        let wstr = str.to_utf32_string;
+        let wc = *match_any_wchar;
+        let opt = wstr.to_array.find_by(eq(wc));
+        if opt.is_none {
+            not_match
+        };
+        let i = opt.as_some;
+        pure $ wstr.get_sub(i, i + 1)
+    };
+
+    // Matches a string specified by the argument.
+    // The parsed result is nothing.
+    // If the match fails, a `_NotMatch` error is raised.
+    match_wstr: [str: ToUTF32String] str -> WParser ();
+    match_wstr = |str| (
+        let wstr = str.to_utf32_string;
+        if wstr.get_size == 1 { // Optimization
+            match_wchar(wstr.@(0))
+        };
+        wstr.to_array.to_iter.fold(
+            unit,
+            |wc, p| do {
+                p;;
+                match_wchar(wc);;
+                pure $ ()
+            }
+        )
+    );
+
+/*  // Obsolete: Matches a zero-length string.
+    match_empty_wstr: WParser UTF32String;
+    match_empty_wstr = unit.map(|_| Zero::zero);
+*/
+
+    // Matches a wide-character satisfying the specified condition.
+    match_wchar_class: (WideChar -> Bool) -> WParser WideChar;
+    match_wchar_class = |f| (
+        match_any_wchar.filter(f)
+    );
+
+    // Matches a zero-or-more-length string. Each wide-character should satisfy the specified condition.
+    match_wstr_class: (WideChar -> Bool) -> WParser UTF32String;
+    match_wstr_class = |f| (
+        repeat(match_wchar_class(f))
+        .map(UTFString::from_array)
+    );
+/*
+    // Obsolete: Matches a zero-or-more-length wide-string of whitespace wide-characters.
+    match_wstr_class_whitespace: WParser UTF32String;
+    match_wstr_class_whitespace = match_wstr_class(WideChar::is_space);
+
+    // Obsolete:  Matches a zero-or-more-length wide-string of lowercase wide-characters.
+    match_wstr_class_lower: WParser UTF32String;
+    match_wstr_class_lower = match_wstr_class(WideChar::is_lower);
+
+    // Obsolete:  Matches a zero-or-more-length wide-string of digit wide-characters.
+    match_wstr_class_digit: WParser UTF32String;
+    match_wstr_class_digit = match_wstr_class(WideChar::is_digit);
+*/
+    // Matches an integer.
+    match_integer: WParser I64;
+    match_integer = (
+        match_wstr_class(WideChar::is_digit)
+        .filter(|wstr| wstr.get_size > 0)
+        .map_result(|wstr| from_string(wstr.to_string))
+    );
+}
+

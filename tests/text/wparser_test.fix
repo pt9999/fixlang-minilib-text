@@ -1,0 +1,458 @@
+module WParserTest;
+
+import Minilib.Text.StringEx;
+import Minilib.Text.Locale;
+import Minilib.Text.Unicode;
+import Minilib.Text.WideChar;
+import Minilib.Text.WParser;
+import Minilib.Testing.UnitTest;
+
+// Crops the error message.
+// eg. `err("line 1, column 0: fatal_error")` => `err("fatal_error")`
+crop_errmsg: Result ErrMsg a -> Result ErrMsg a;
+crop_errmsg = |res| (
+    res.mod_err(|e|
+        match e.find_last_byte(':') {
+            none() => e,
+            some(i) => e.get_sub(i + 2, e.get_size)
+        }
+    )
+);
+
+test_wstream_readall: TestCase;
+test_wstream_readall = (
+    make_test("test_wstream_readall") $ |_|
+    let str = "こんにちは\n世界！\n";
+    let s: WStream = *str.from_string.from_result;
+    let s = s.set_filename("hello.txt");
+    assert_equal("filename", "hello.txt", s.@filename);;
+    assert_equal("line", 1, s.@line);;
+    assert_equal("column", 0, s.@column);;
+    assert_equal("position", 0, s.@position);;
+    let (arr, s) = s.read_all;
+    let result_str: UTF32String = UTFString::make(arr);
+    assert_equal("array", result_str, str.to_utf32_string);;
+    assert_equal("line", 3, s.@line);;
+    assert_equal("column", 0, s.@column);;
+    assert_equal("position", 10, s.@position);;
+    pure()
+);
+
+test_wstream_read_wstring_between: TestCase;
+test_wstream_read_wstring_between = (
+    make_test("test_wstream_read_wstring_between") $ |_|
+    let str = "あいうえおかきくけこ";
+    let s: WStream = WStream::make(str);
+    let begin_stream = s.set_position(2);
+    let end_stream = s.set_position(7);
+    let expected = "うえおかき".to_utf32_string;
+    let actual = begin_stream.read_wstring_between(end_stream);
+    assert_equal("eq", expected, actual);;
+    let actual = end_stream.read_wstring_between(begin_stream);
+    assert_equal("reversed", expected, actual);;
+    pure()
+);
+
+test_wstream_error: TestCase;
+test_wstream_error = (
+    make_test("test_wstream_error") $ |_|
+    let str = "こんにちは\n世界！\n";
+    let s: WStream = *str.from_string.from_result;
+    let s = s.set_filename("hello.txt").set_line(1).set_column(2);
+    let res: Result ErrMsg () = s.error("errormsg");
+    assert_true("res is not err", res.is_err);;
+    let errmsg = res.as_err;
+    assert_equal("errmsg", "hello.txt line 1, column 2: errormsg", errmsg);;
+    pure()
+);
+
+test_wparser_map_result: TestCase;
+test_wparser_map_result = (
+    make_table_test("test_wparser_map_result",
+        [
+            ("abc", "err", err $ _NotMatch),
+            ("abc", "inc", ok $ "b"),
+        ],
+        |(text, op, expected)|
+        let expected = expected.map(to_utf32_string);
+        let p = match_any_wchar;
+        let p = p.map_result(|a|
+            if op == "err" { err $ _NotMatch };
+            if op == "inc" { ok $ a + 1_U32 };
+            undefined("invalid op: " + op)
+        );
+        let res = p.eval_wparser_str(text);
+        let actual = res.map(UTFString::from_code_unit);
+        assert_equal("eq", expected, actual)
+    )
+);
+
+test_wparser_unit: TestCase;
+test_wparser_unit = (
+    make_test("test_wparser_unit", |_|
+        let p = unit;
+        let res = p.run_wparser_str("abc");
+        assert_true("ok", res.is_ok);;
+        let ((), stream) = res.as_ok;
+        assert_equal("position", 0, stream.@position)
+    )
+);
+
+test_wparser_get_stream: TestCase;
+test_wparser_get_stream = (
+    make_test("test_wparser_get_stream", |_|
+        let p = do {
+            let a = *match_any_wchar;
+            let begin_stream = *get_stream;
+            let b = *match_any_wchar;
+            let c = *match_any_wchar;
+            let end_stream = *get_stream;
+            let d = *match_any_wchar;
+            let outer = UTFString::from_array $ [a, b, c, d];
+            let inner = begin_stream.read_wstring_between(end_stream);
+            pure $ (outer, inner)
+        };
+        let res = p.run_wparser_str("あいうえお");
+        assert_true("ok", res.is_ok);;
+        let ((outer, inner), stream) = res.as_ok;
+        assert_equal("eq", "あいうえ".to_utf32_string, outer);;
+        assert_equal("eq", "いう".to_utf32_string, inner);;
+        assert_equal("position", 4, stream.@position)
+    )
+);
+
+test_wparser_filter: TestCase;
+test_wparser_filter = (
+    make_table_test("test_wparser_filter",
+        [
+            ("うえお", "あ", "お", ok $ "う"),
+            ("うえお", "か", "こ", err $ _NotMatch),
+            ("くけこ", "か", "こ", ok $ "く"),
+        ],
+        |(text, min_wc, max_wc, expected)|
+        let min_wc = min_wc.to_utf32_string.@(0);
+        let max_wc = max_wc.to_utf32_string.@(0);
+        let p = match_any_wchar.filter(|wc| min_wc <= wc && wc <= max_wc);
+        let res = p.eval_wparser_str(text);
+        let expected = expected.map(to_utf32_string);
+        let actual = res.map(UTFString::from_code_unit);
+        assert_equal("eq", expected, actual)
+    )
+);
+
+test_wparser_or_else: TestCase;
+test_wparser_or_else = (
+    make_test("test_wparser_or_else") $ |_|
+    let fatal: ErrMsg = "fatal_error";
+    let p1: WParser WideChar = not_match;
+    let p2: WParser WideChar = error_parser(fatal);
+    let p3: WParser WideChar = match_any_wchar;
+    let text = "あいう";
+    let run = |p| p.eval_wparser_str(text).map(UTFString::from_code_unit).crop_errmsg;
+    let a = "あ".to_utf32_string;
+    assert_equal("pattern 11", err $ _NotMatch, run $ p1.or_else(p1));;
+    assert_equal("pattern 12", err $ fatal, run $ p1.or_else(p2));;
+    assert_equal("pattern 13", ok $ a, run $ p1.or_else(p3));;
+    assert_equal("pattern 21", err $ fatal, run $ p2.or_else(p1));;
+    assert_equal("pattern 22", err $ fatal, run $ p2.or_else(p2));;
+    assert_equal("pattern 23", err $ fatal, run $ p2.or_else(p3));;
+    assert_equal("pattern 31", ok $ a, run $ p3.or_else(p1));;
+    assert_equal("pattern 32", ok $ a, run $ p3.or_else(p2));;
+    assert_equal("pattern 33", ok $ a, run $ p3.or_else(p3));;
+    pure()
+);
+
+test_wparser_or_error: TestCase;
+test_wparser_or_error = (
+    make_test("test_wparser_or_error") $ |_|
+    let fatal: ErrMsg = "fatal_error";
+    let fatal2: ErrMsg = "fatal_error2";
+    let p1: WParser WideChar = not_match;
+    let p2: WParser WideChar = error_parser(fatal);
+    let p3: WParser WideChar = match_any_wchar;
+    let text = "あいう";
+    let run = |p| p.eval_wparser_str(text).map(UTFString::from_code_unit).crop_errmsg;
+    let a = "あ".to_utf32_string;
+    assert_equal("pattern 1", err $ fatal2, run $ p1.or_error(fatal2));;
+    assert_equal("pattern 2", err $ fatal2, run $ p2.or_error(fatal2));;
+    assert_equal("pattern 3", ok $ a, run $ p3.or_error(fatal2));;
+    pure()
+);
+
+test_wparser_error_parser: TestCase;
+test_wparser_error_parser = (
+    make_test("test_wparser_error_parser") $ |_|
+    let p: WParser WideChar = error_parser("fatal_error");
+    assert_equal("eq", err $ "fatal_error", p.eval_wparser_str("あいう").crop_errmsg)
+);
+
+test_wparser_not_match: TestCase;
+test_wparser_not_match = (
+    make_test("test_wparser_not_match") $ |_|
+    let p: WParser WideChar = not_match;
+    assert_equal("eq", err $ _NotMatch, p.eval_wparser_str("あいう").crop_errmsg)
+);
+
+test_wparser_repeat: TestCase;
+test_wparser_repeat = (
+    make_table_test("test_wparser_repeat",
+        [
+            ("", ok $ ""),
+            ("a", ok $ "a"),
+            ("aa", ok $ "aa"),
+            ("aa ", ok $ "aa"),
+            ("aa bb あいう", ok $ "aa"),
+            ("あいう　かきく", ok $ "あいう"),
+            ("あ１い２　う３", ok $ "あ１い２"),
+            ("　あい", ok $ ""),
+        ],
+        |(text, expected)|
+        let expected = expected.map(to_utf32_string);
+        let p = match_wchar_class(|c| !c.is_space).repeat.map(UTFString::from_array);
+        let actual = p.eval_wparser_str(text);
+        assert_equal("eq", expected, actual)
+    )
+);
+
+test_wparser_zero_or_more: TestCase;
+test_wparser_zero_or_more = (
+    make_table_test("test_wparser_zero_or_more",
+        [
+            ("", ok $ ""),
+            ("a", ok $ "a"),
+            ("abcde", ok $ "abcde"),
+        ],
+        |(text, expected)|
+        let expected = expected.map(to_utf32_string);
+        let p = match_any_wchar.zero_or_more.map(UTFString::from_array);
+        let actual= p.eval_wparser_str(text);
+        assert_equal("eq", expected, actual)
+    )
+);
+
+test_wparser_one_or_more: TestCase;
+test_wparser_one_or_more = (
+    make_table_test("test_wparser_one_or_more",
+        [
+            ("", err $ _NotMatch),
+            ("a", ok $ "a"),
+            ("abcde", ok $ "abcde"),
+        ],
+        |(text, expected)|
+        let expected = expected.map(to_utf32_string);
+        let p = match_any_wchar.one_or_more.map(UTFString::from_array);
+        let actual = p.eval_wparser_str(text);
+        assert_equal("eq", expected, actual)
+    )
+);
+
+test_wparser_if_exists: TestCase;
+test_wparser_if_exists = (
+    make_table_test("test_wparser_if_exists",
+        [
+            ("", ok $ none()),
+            ("a", ok $ some $ "a"),
+            ("abcde", ok $ some $ "a"),
+        ],
+        |(text, expected)|
+        let expected = expected.map(map(to_utf32_string));
+        let p = match_any_wchar.if_exists.map(map(UTFString::from_code_unit));
+        let actual = p.eval_wparser_str(text);
+        assert_equal("eq", expected, actual)
+    )
+);
+
+test_wparser_match_end_of_stream: TestCase;
+test_wparser_match_end_of_stream = (
+    make_table_test("test_wparser_match_end_of_stream",
+        [
+            ("", ok()),
+            ("a", err $ "Missing EOS"),
+        ],
+        |(text, expected)|
+        let p = match_end_of_stream;
+        let actual = p.eval_wparser_str(text).crop_errmsg;
+        assert_equal("eq", expected, actual)
+    )
+);
+
+test_wparser_match_any_wchar: TestCase;
+test_wparser_match_any_wchar = (
+    make_table_test("test_wparser_match_any_wchar",
+        [
+            ("", err $ _NotMatch),
+            ("abc", ok $ "a"),
+            ("あいう", ok $ "あ"),
+            ("😊😀", ok $ "😊"),
+        ],
+        |(text, expected)|
+        let expected = expected.map(to_utf32_string);
+        let p = match_any_wchar.map(UTFString::from_code_unit);
+        let actual = p.eval_wparser_str(text);
+        assert_equal("eq", expected, actual)
+    )
+);
+
+test_wparser_match_wchar: TestCase;
+test_wparser_match_wchar = (
+    make_table_test("test_wparser_match_wchar",
+        [
+            ("", "a", err $ _NotMatch),
+            ("", "あ", err $ _NotMatch),
+            ("abc", "a", ok()),
+            ("abc", "あ", err $ _NotMatch),
+            ("あいう", "a", err $ _NotMatch),
+            ("あいう", "あ", ok()),
+            ("😊😀", "a", err $ _NotMatch),
+            ("😊😀", "あ", err $ _NotMatch),
+            ("😊😀", "😊", ok()),
+        ],
+        |(text, wchar, expected)|
+        let wchar = wchar.to_utf32_string.@(0);
+        let p = match_wchar(wchar);
+        let actual = p.eval_wparser_str(text);
+        assert_equal("eq", expected, actual)
+    )
+);
+
+test_wparser_match_one_of_wchar: TestCase;
+test_wparser_match_one_of_wchar = (
+    make_table_test("test_wparser_match_one_of_wchar",
+        [
+            ("", "", err $ _NotMatch),
+            ("", "aあ😊", err $ _NotMatch),
+            ("a", "", err $ _NotMatch),
+            ("a", "a", ok $ "a"),
+            ("a", "aあ😊", ok $ "a"),
+            ("abcあ😊", "aあ😊", ok $ "a"),
+            ("bcあ😊", "aあ😊", err $ _NotMatch),
+            ("あいう", "aあ😊", ok $ "あ"),
+            ("😊😀aあ", "aあ😊", ok $ "😊"),
+        ],
+        |(text, wchars, expected)|
+        let expected = expected.map(to_utf32_string);
+        let p = match_one_of_wchar(wchars);
+        let actual = p.eval_wparser_str(text);
+        assert_equal("eq", expected, actual)
+    )
+);
+
+test_wparser_match_wstr: TestCase;
+test_wparser_match_wstr = (
+    make_table_test("test_wparser_match_wstr",
+        [
+            ("null123", "null", ok()),
+            ("false123", "false", ok()),
+            ("あいうえお123", "あいう", ok()),
+            ("nulxl123", "null", err $ _NotMatch),
+            ("あいえお123", "あいう", err $ _NotMatch),
+        ],
+        |(text, str, expected)|
+        let p = WParser::match_wstr(str);
+        let res = p.run_wparser_str(text);
+        match res {
+            err(e) => assert_equal("err", expected, err(e)),
+            ok(((), stream)) => (
+                assert_equal("ok", expected, ok());;
+                assert_equal("column", stream.@column, str.to_utf32_string.get_size)
+            )
+        }
+    )
+);
+
+test_wparser_match_wstr_class: TestCase;
+test_wparser_match_wstr_class = (
+    make_table_test("test_wparser_match_wstr_class",
+        [
+            ("digit", "    abc", ""),
+            ("digit", "0123abc", "0123"),
+            ("digit", "０１２３ａｂｃ", ""),    // "０１２３" is not digits
+            ("digit", "abc0123", ""),
+            ("digit", "ａｂｃ０１２３", ""),
+            ("lower", "    abc", ""),
+            ("lower", "0123abc", ""),
+            ("lower", "０１２３ａｂｃ", ""),
+            ("lower", "abc0123", "abc"),
+            ("lower", "αβγ0123", "αβγ"),
+            ("lower", "ａｂｃ０１２３", "ａｂｃ"),
+            ("space", "    abc", "    "),
+            ("space", "0123abc", ""),
+            ("space", "abc0123", ""),
+        ],
+        |(class_name, text, expected)|
+        let p = if class_name == "digit" { match_wstr_class(WideChar::is_digit) }
+        else if class_name == "lower" { match_wstr_class(WideChar::is_lower) }
+        else if class_name == "space" { match_wstr_class(WideChar::is_space) }
+        else { undefined("invalid class_name: " + class_name) };
+        let (wstr, next) = *p.run_wparser_str(text).from_result;
+        assert_equal("eq", expected.to_utf32_string, wstr)
+    )
+);
+
+test_wparser_integer: TestCase;
+test_wparser_integer = (
+    make_table_test("test_wparser_integer",
+        [
+            ("", err $ _NotMatch),
+            ("0", ok $ 0),
+            ("1", ok $ 1),
+            ("-1", err $ _NotMatch),    // currently negative integers are not supported
+            ("１", err $ _NotMatch),
+            ("01234abc", ok $ 1234),
+            ("012３４ａｂｃ", ok $ 12),
+            ("abc01234", err $ _NotMatch),
+        ],
+        |(text, expected)|
+        let p = WParser::match_integer;
+        let res = p.run_wparser_str(text).map(|(i64, next)| i64);
+        assert_equal("eq", expected, res)
+    )
+);
+
+test_wparser_bind: TestCase;
+test_wparser_bind = (
+    make_test("test_wparser_bind") $ |_|
+    let text = "012abc";
+    let p: WParser UTF32String = do {
+        let digit: UTF32String = *match_wstr_class(WideChar::is_digit);
+        let lower: UTF32String = *match_wstr_class(WideChar::is_lower);
+        pure $ digit + "/".to_utf32_string + lower
+    };
+    let expected = "012/abc".to_utf32_string;
+    let (actual, s) = *p.run_wparser_str(text).from_result;
+    assert_equal("eq", expected, actual)
+);
+
+main: IO ();
+main = (
+    [
+        test_wstream_readall,
+        test_wstream_read_wstring_between,
+        test_wstream_error,
+        test_wparser_map_result,
+        test_wparser_unit,
+        test_wparser_get_stream,
+        test_wparser_filter,
+        test_wparser_or_else,
+        test_wparser_or_error,
+        test_wparser_error_parser,
+        test_wparser_not_match,
+        test_wparser_repeat,
+        test_wparser_zero_or_more,
+        test_wparser_one_or_more,
+        test_wparser_if_exists,
+        test_wparser_match_end_of_stream,
+        test_wparser_match_any_wchar,
+        test_wparser_match_one_of_wchar,
+        test_wparser_match_wchar,
+        test_wparser_match_wstr,
+        test_wparser_match_wstr_class,
+        test_wparser_integer,
+        test_wparser_bind,
+        TestCase::empty
+    ]
+    // run all tests with LC_ALL=C.UTF-8
+    .map(map(with_locale(lc_all, locale_C_UTF8)))
+    .run_test_driver
+);
+

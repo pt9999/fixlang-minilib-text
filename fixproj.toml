@@ -12,6 +12,7 @@ files = [
     "lib/text/simple_parser.fix",
     "lib/text/unicode.fix",
     "lib/text/wide_char.fix",
+    "lib/text/wparser.fix",
 ]
 objects = ["lib.o"]
 preliminary_commands = [["make", "lib.o"]]
@@ -24,6 +25,7 @@ files = [
     "tests/text/simple_parser_test.fix",
     "tests/text/unicode_test.fix",
     "tests/text/wide_char_test.fix",
+    "tests/text/wparser_test.fix",
 ]
 
 [[dependencies]]
