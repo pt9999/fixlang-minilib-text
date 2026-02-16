@@ -218,6 +218,42 @@ test_utf32_string_set = (
     )
 );
 
+test_utf32_string_split: TestCase;
+test_utf32_string_split = (
+    make_table_test("test_utf32_string_split",
+        [
+            ("", "", []),
+            ("aあ😀", "", ["a", "あ", "😀"]),
+            ("", "a", [""]),
+            ("a", "", ["a"]),
+            ("a", "b", ["a"]),
+            ("a", "a", ["", ""]),
+            ("ababa", "a", ["", "b", "b", ""]),
+            ("ababa", "b", ["a", "a", "a"]),
+            ("ababa", "aba", ["", "ba"]),
+            ("ababa", "ababa", ["", ""]),
+            ("ababa", "abcba", ["ababa"]),
+            ("", "😀", [""]),
+            ("😀", "", ["😀"]),
+            ("😀", "😊", ["😀"]),
+            ("😀", "😀", ["", ""]),
+            ("あ😀あ😀あ", "あ", ["", "😀", "😀", ""]),
+            ("あ😀あ😀あ", "😀", ["あ", "あ", "あ"]),
+            ("あ😀あ😀あ", "あ😀あ", ["", "😀あ"]),
+            ("あ😀あ😀あ", "あ😀あ😀あ", ["", ""]),
+            ("あ😀あ😀あ", "あ😀い😀あ", ["あ😀あ😀あ"]),
+            ("大きな　栗の　木の　下で", "　", ["大きな","栗の","木の","下で"]),
+            ("大きな栗の木の下で", "栗の木の", ["大きな", "下で"]),
+        ],
+        |(str, sep, expected)|
+        let str = str.to_utf32_string;
+        let sep = sep.to_utf32_string;
+        let arr: Array UTF32String = str.split(sep).to_array;
+        let actual = arr.map(to_string);
+        assert_equal("eq", expected, actual)
+    )
+);
+
 // test for `Zero`, `Add`
 test_utf32_string_zero_add: TestCase;
 test_utf32_string_zero_add = (
@@ -428,6 +464,7 @@ main = (
         test_utf32_string_push_back,
         test_utf32_string_pop_back,
         test_utf32_string_set,
+        test_utf32_string_split,
         test_utf32_string_zero_add,
         test_utf32_string_eq,
         test_utf32_string_less_than,
@@ -437,7 +474,6 @@ main = (
         test_utf16_to_utf32,
         test_utf32_to_utf16,
         test_utf8_enc_dec,
-        TestCase::empty
     ]
     .run_test_driver
 );

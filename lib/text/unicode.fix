@@ -208,6 +208,36 @@ namespace UTFString {
     // * `str` - The unicode string to be modified.
     set: I64 -> a -> UTFString a -> UTFString a;
     set = |i, c, s| s.mod_data(set(i, c));
+
+    // Splits a unicode string by the specified separator.
+    //
+    // As a special behavior, if the separator is empty, this function returns
+    // an iterator where each element is a Unicode string consisting of
+    // a single code unit.
+    //
+    // # Parameters
+    //
+    // * `sep` - A separator.
+    // * `str` - A unicode string.
+    split: [a: Eq] UTFString a -> UTFString a -> ArrayIterator (UTFString a);
+    split = |sep, str| (
+        if sep.get_size == 0 {
+            str.to_array.map(UTFString::from_code_unit).to_iter
+        };
+        loop(
+            (0, []), |(begin, arr)|
+            match str.find(sep, begin) {
+                none() => (
+                    let arr = arr.push_back(str.get_sub(begin, str.get_size));
+                    break $ arr.to_iter
+                ),
+                some(end) => (
+                    let arr = arr.push_back(str.get_sub(begin, end));
+                    continue $ (end + sep.get_size, arr)
+                )
+            }
+        )
+    );
 }
 
 // An empty unicode string.
