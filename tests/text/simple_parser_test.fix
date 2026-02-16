@@ -38,6 +38,54 @@ test_stream_error = (
     pure()
 );
 
+test_parser_run_parser: TestCase;
+test_parser_run_parser = (
+    make_test("test_parser_run_parser") $ |_|
+    let str = "a";
+    let s: Stream = Stream::make(str);
+    let res = match_any_char.run_parser(s);
+    assert_true("is_ok", res.is_ok);;
+    let (c, s1) = res.as_ok;
+    assert_equal("c", 'a', c);;
+    assert_equal("pos", 1, s1.@position);;
+    let res = match_char('b').run_parser(s);
+    assert_true("is_err", res.is_err);;
+    assert_equal("not_match", _NotMatch, res.as_err)
+);
+
+test_parser_run_parser_str: TestCase;
+test_parser_run_parser_str = (
+    make_test("test_parser_run_parser_str") $ |_|
+    let res = match_any_char.run_parser_str("a");
+    assert_true("is_ok", res.is_ok);;
+    let (c, s1) = res.as_ok;
+    assert_equal("c", 'a', c);;
+    assert_equal("pos", 1, s1.@position);;
+    let res = match_char('b').run_parser_str("a");
+    assert_true("is_err", res.is_err);;
+    assert_equal("not_match", _NotMatch, res.as_err)
+);
+
+test_parser_eval_parser: TestCase;
+test_parser_eval_parser = (
+    make_test("test_parser_eval_parser") $ |_|
+    let str = "a";
+    let s: Stream = Stream::make(str);
+    let res = match_any_char.eval_parser(s);
+    assert_equal("ok", ok $ 'a', res);;
+    let res = match_char('b').eval_parser(s);
+    assert_equal("err", err $ _NotMatch, res)
+);
+
+test_parser_eval_parser_str: TestCase;
+test_parser_eval_parser_str = (
+    make_test("test_parser_eval_parser_str") $ |_|
+    let res = match_any_char.eval_parser_str("a");
+    assert_equal("ok", ok $ 'a', res);;
+    let res = match_char('b').eval_parser_str("a");
+    assert_equal("err", err $ _NotMatch, res)
+);
+
 test_parser_repeat_ok: (String, String) -> TestCase;
 test_parser_repeat_ok = |(text, expected)| (
     let testname = "test_parser_repeat_ok(" + text + "," + expected + ")";
@@ -48,6 +96,8 @@ test_parser_repeat_ok = |(text, expected)| (
     assert_equal("expect", expected, actual);;
     pure()
 );
+
+// TODO: add tests
 
 test_parser_repeat: TestCase;
 test_parser_repeat = (
@@ -156,6 +206,10 @@ main = (
     [
         test_stream_readall,
         test_stream_error,
+        test_parser_run_parser,
+        test_parser_run_parser_str,
+        test_parser_eval_parser,
+        test_parser_eval_parser_str,
         test_parser_repeat,
         test_parser_match_str,
         test_parser_class,

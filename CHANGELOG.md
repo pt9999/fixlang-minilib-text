@@ -1,7 +1,10 @@
 ## 0.8.1
 ### Added
 - Added Minilib.Text.WParser.
+- Minilib.Text.SimpleParser: Added `eval_parser`, `eval_parser_str`.
 - Minilib.Text.Unicode: Added `from_array`, `to_array`, `from_code_unit`.
+### Changed
+- Minilib.Text.SimpleParser: `ParseResult` is now deprecated. Changed document comments.
 
 ## 0.8.0
 ### Changed

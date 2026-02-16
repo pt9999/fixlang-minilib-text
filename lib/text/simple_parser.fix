@@ -112,20 +112,10 @@ impl Stream: ToString {
     );
 }
 
+// Deprecated: use `Result ErrMsg (a, Stream)` directly.
+//
 // Result type that returns a value of an arbitrary type and a stream.
 type ParseResult a = Result ErrMsg (a, Stream);
-
-/*
-//impl [a: ToString] ParseResult a: ToString {
-    to_string = |res| (
-        if res.is_err {
-            "err $ \"" + res.as_err + "\""
-        };
-        let (c, s) = res.as_ok;
-        "ok $ (" + c.to_string + ", pos=" + s.@position.to_string + ")"
-    );
-}
-*/
 
 // A special error message that represents the parser is not matched.
 _NotMatch: ErrMsg;
@@ -133,24 +123,36 @@ _NotMatch = "NotMatch";
 
 
 // A structure with a function that receive a stream, parse it, and
-// return the parsed result and the next stream position.
-type Parser a = unbox struct { _parser: Stream -> ParseResult a };
+// return the parsed value and the stream whose position is moved after the parsed string.
+type Parser a = unbox struct { _parser: Stream -> Result ErrMsg (a, Stream) };
 
-// A function that creates a Parser structure based on the parsing function.
-parser: (Stream -> ParseResult a) -> Parser a;
+// Creates a Parser from the specified parsing function.
+parser: (Stream -> Result ErrMsg (a, Stream)) -> Parser a;
 parser = |f| Parser { _parser: f };
 
 namespace Parser {
-    // Apply a stream to a parsing function and return the parsed result.
-    run_parser: Stream -> Parser a -> ParseResult a;
+    // Applies a stream to a Parser and returns the parsed value and the stream.
+    run_parser: Stream -> Parser a -> Result ErrMsg (a, Stream);
     run_parser = |s, p| p.@_parser $ s;
 
-    // Create a stream from a string, then apply a stream to a parsing function
-    // and return the parsed result.
-    run_parser_str: String -> Parser a -> ParseResult a;
+    // Creates a stream from a string, then applies the stream to a Parser
+    // and return the parsed value and the stream.
+    run_parser_str: String -> Parser a -> Result ErrMsg (a, Stream);
     run_parser_str = |str, p|
         let s: Stream = *(from_string(str));
         p.run_parser(s);
+
+    // Applies a stream to a Parser and returns the parsed value.
+    eval_parser: Stream -> Parser a -> Result ErrMsg a;
+    eval_parser = |s, p| p.run_parser(s).map(Tuple2::@0);
+
+    // Creates a stream from a string, then applys a stream to a Parser
+    // and return the parsed value.
+    eval_parser_str: String -> Parser a -> Result ErrMsg a;
+    eval_parser_str = |str, p| (
+        p.run_parser_str(str).map(Tuple2::@0)
+    );
+
 }
 
 impl Parser: Functor {
