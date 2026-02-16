@@ -101,7 +101,7 @@ namespace Stream {
 // Creates a stream from a string.
 impl Stream: FromString {
     from_string = |str| (
-        pure $ Stream::make(str) 
+        pure $ Stream::make(str)
     );
 }
 
@@ -174,7 +174,7 @@ impl Parser: Monad {
 }
 
 namespace Parser {
-    // `parser.map_result(f)` maps the parser result with `f`, possibly reports 
+    // `parser.map_result(f)` maps the parser result with `f`, possibly reports
     // an error message.
     map_result: (a -> Result ErrMsg b) -> Parser a -> Parser b;
     map_result = |f, p| parser $ |s| (
@@ -215,7 +215,7 @@ namespace Parser {
     );
 
     // If the first Parser raises a `_NotMatch` error, tries the second Parser.
-    // Note that `pa1.or_else(pa2)` is interpreted as `or_else(pa2, pa1)`, 
+    // Note that `pa1.or_else(pa2)` is interpreted as `or_else(pa2, pa1)`,
     // and  that `pa1.or_else $ pa2` is interpreted as `or_else(pa1, pa2)`.
     or_else: Parser a -> Parser a -> Parser a;
     or_else = |pa2, pa1| parser $ |s| (
@@ -334,7 +334,7 @@ namespace Parser {
     );
 
     // Matches a single character if it exists.
-    // The parsed result is `some(c)` if it exists, 
+    // The parsed result is `some(c)` if it exists,
     // `none()` if it does not exist.
     match_char_if_exists: U8 -> Parser (Option U8);
     match_char_if_exists = |c| (
