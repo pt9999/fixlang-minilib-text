@@ -22,7 +22,9 @@ import Minilib.Text.StringEx;
 
 // Unicode string type.
 //
-// A unicode string is represented as a non-null-terminated array of code units.
+// A unicode string is represented as an array of code units.
+//
+// NOTE: The array of code units NEED NOT to be null-terminated.
 type UTFString a = unbox struct {
     data: Array a
 };
@@ -35,19 +37,35 @@ type UTF16String = UTFString U16;
 type UTF32String = UTFString U32;
 
 namespace UTFString {
-    // Creates a unicode string from a non-null-terminated array of code units.
+    // Creates a unicode string from an array of code units.
+    //
+    // NOTE: The array of code units NEED NOT to be null-terminated.
     //
     // # Parameters
     //
-    // * `array` - A non-null-terminated array of code units.
+    // * `array` - An array of code units.
     make: Array a -> UTFString a;
     make = |array| UTFString { data: array };
 
-    // `UTFString::from_array` is a synonym of `UTFString::make`.
+    // Converts an array of code units to a unicode string.
+    //
+    // `UTFString::from_array(array)` is equal to `UTFString::make(array)`.
+    //
+    // NOTE: The array of code units NEED NOT to be null-terminated.
+    //
+    // # Parameters
+    //
+    // * `array` - An array of code units.
     from_array: Array a -> UTFString a;
     from_array = UTFString::make;
 
-    // `UTFString::to_array` is a synonym of `UTFString::@data`.
+    // Converts a unicode string to an array of code units.
+    //
+    // `UTFString::to_array(str)` is equal to `str.@data`.
+    //
+    // # Parameters
+    //
+    // * `str` - A unicode string.
     to_array: UTFString a -> Array a;
     to_array = UTFString::@data;
 
