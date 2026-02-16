@@ -61,7 +61,7 @@ get_locale = |category_name| (
         do {
             let ptr = *FFI_CALL_IO[Ptr minilib_set_locale(Ptr, Ptr), p_category_name, nullptr].lift;
             if ptr == nullptr { throw("get_locale failed! errno=" + *get_errno.map(to_string).lift) };
-            pure $ _unsafe_from_c_str_ptr(ptr)
+            unsafe_from_c_str_ptr_io(ptr).lift
         }.to_result
     ).from_io_result
 );

@@ -1,3 +1,7 @@
+## 0.8.2
+### Fixed
+- Minilib.Text.Locale::get_locale: Changed `_unsafe_from_c_str_ptr` -> `unsafe_from_c_str_ptr_io`.
+
 ## 0.8.1
 ### Added
 - Added Minilib.Text.WParser.
