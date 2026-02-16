@@ -3,6 +3,8 @@
 - Minilib.Text.Unicode: Added `from_iter`, `to_iter`.
 ### Changed
 - Utilized minilib-common@0.12.3.
+### Fixed
+- Minilib.Text.Unicode: `find`: Fixed a bug where `"ababa".find("aba", 3)` caused a crash.
 
 ## 0.8.2
 ### Fixed

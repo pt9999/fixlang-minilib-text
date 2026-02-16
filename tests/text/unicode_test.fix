@@ -148,16 +148,19 @@ test_utf32_string_find: TestCase;
 test_utf32_string_find = (
     make_table_test("test_utf32_string_find",
         [
-            ("", "", 0, none()),
+            ("", "", 0, some(0)),
+            ("", "", 1, none()),
             ("", "あ", 0, none()),
             ("あ", "", 0, some(0)),
-            ("あ", "", 1, none()),
+            ("あ", "", 1, some(1)),
+            ("あ", "", 2, none()),
             ("あ", "あ", 0, some(0)),
             ("あ", "あ", 1, none()),
             ("09AZazあア漢😊😀", "漢😊", 0, some(8)),
             ("09AZazあア漢😊😀", "漢😊", 8, some(8)),
             ("09AZazあア漢😊😀", "漢😊", 9, none()),
             ("09AZazあア漢😊😀", "漢😊", 100, none()),
+            ("ababa", "aba", 3, none()),
         ],
         |(str, tok, start, expected)|
         let str = str.to_utf32_string;

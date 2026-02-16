@@ -153,6 +153,9 @@ namespace UTFString {
 
     // `str.find(token, start_idx)` finds the index where `token` firstly appears in `str` starting from `start_idx`.
     //
+    // As a special behavior, if the `token` is empty, this function returns
+    // `some(start_idx)` if `start_idx <= str.get_size`, or returns `none()` otherwise.
+    //
     // # Parameters
     //
     // * `token` - The token to be searched.
@@ -166,7 +169,7 @@ namespace UTFString {
         let tok = tok.@data;
         loop(
             start, |i|
-            if i >= n { break $ none() };
+            if i + m > n { break $ none() };
             let res = loop(
                 0, |j|
                 if j >= m { break $ true };
