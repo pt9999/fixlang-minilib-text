@@ -1,6 +1,6 @@
 # Minilib.Text.SimpleParser
 
-Defined in minilib-text@0.8.0
+Defined in minilib-text@0.8.1
 
 Simple text parser. Customizable by monadic operations.
 - Stream of characters
@@ -13,9 +13,9 @@ Simple text parser. Customizable by monadic operations.
 
 #### parser
 
-Type: `(Minilib.Text.SimpleParser::Stream::Stream -> Minilib.Text.SimpleParser::ParseResult a) -> Minilib.Text.SimpleParser::Parser a`
+Type: `(Minilib.Text.SimpleParser::Stream::Stream -> Std::Result Std::ErrMsg (a, Minilib.Text.SimpleParser::Stream::Stream)) -> Minilib.Text.SimpleParser::Parser a`
 
-A function that creates a Parser structure based on the parsing function.
+Creates a Parser from the specified parsing function.
 
 ### namespace Minilib.Text.SimpleParser::Parser
 
@@ -30,6 +30,19 @@ Prints the parser result.
 Type: `Std::String -> Minilib.Text.SimpleParser::Parser a`
 
 Raises the specified string as an error.
+
+#### eval_parser
+
+Type: `Minilib.Text.SimpleParser::Stream::Stream -> Minilib.Text.SimpleParser::Parser a -> Std::Result Std::ErrMsg a`
+
+Applies a stream to a Parser and returns the parsed value.
+
+#### eval_parser_str
+
+Type: `Std::String -> Minilib.Text.SimpleParser::Parser a -> Std::Result Std::ErrMsg a`
+
+Creates a stream from a string, then applys a stream to a Parser
+and return the parsed value.
 
 #### filter
 
@@ -192,16 +205,16 @@ If an error other than _NotMatch is raised, reports that error.
 
 #### run_parser
 
-Type: `Minilib.Text.SimpleParser::Stream::Stream -> Minilib.Text.SimpleParser::Parser a -> Minilib.Text.SimpleParser::ParseResult a`
+Type: `Minilib.Text.SimpleParser::Stream::Stream -> Minilib.Text.SimpleParser::Parser a -> Std::Result Std::ErrMsg (a, Minilib.Text.SimpleParser::Stream::Stream)`
 
-Apply a stream to a parsing function and return the parsed result.
+Applies a stream to a Parser and returns the parsed value and the stream.
 
 #### run_parser_str
 
-Type: `Std::String -> Minilib.Text.SimpleParser::Parser a -> Minilib.Text.SimpleParser::ParseResult a`
+Type: `Std::String -> Minilib.Text.SimpleParser::Parser a -> Std::Result Std::ErrMsg (a, Minilib.Text.SimpleParser::Stream::Stream)`
 
-Create a stream from a string, then apply a stream to a parsing function
-and return the parsed result.
+Creates a stream from a string, then applies the stream to a Parser
+and return the parsed value and the stream.
 
 #### unit
 
@@ -274,6 +287,8 @@ The type of characters. Currently only UTF-8 string is supported.
 
 Defined as: `type ParseResult a = Std::Result Std::ErrMsg (a, Minilib.Text.SimpleParser::Stream::Stream)`
 
+Deprecated: use `Result ErrMsg (a, Stream)` directly.
+
 Result type that returns a value of an arbitrary type and a stream.
 
 #### Parser
@@ -281,11 +296,11 @@ Result type that returns a value of an arbitrary type and a stream.
 Defined as: `type Parser a = unbox struct { ...fields... }`
 
 A structure with a function that receive a stream, parse it, and
-return the parsed result and the next stream position.
+return the parsed value and the stream whose position is moved after the parsed string.
 
 ##### field `_parser`
 
-Type: `Minilib.Text.SimpleParser::Stream::Stream -> Minilib.Text.SimpleParser::ParseResult a`
+Type: `Minilib.Text.SimpleParser::Stream::Stream -> Std::Result Std::ErrMsg (a, Minilib.Text.SimpleParser::Stream::Stream)`
 
 ### namespace Minilib.Text.SimpleParser::Stream
 

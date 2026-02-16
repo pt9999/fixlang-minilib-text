@@ -1,6 +1,6 @@
 # Minilib.Text.Unicode
 
-Defined in minilib-text@0.8.0
+Defined in minilib-text@0.8.1
 
 Unicode strings and conversions (UTF8/UTF16/UTF32)
 
@@ -117,6 +117,22 @@ Type: `[a : Std::Eq] Minilib.Text.Unicode::UTFString a -> Std::I64 -> Minilib.Te
 * `start_idx` - The index to start searching from.
 * `str` - The unicode string to be searched.
 
+#### from_array
+
+Type: `Std::Array a -> Minilib.Text.Unicode::UTFString a`
+
+`UTFString::from_array` is a synonym of `UTFString::make`.
+
+#### from_code_unit
+
+Type: `a -> Minilib.Text.Unicode::UTFString a`
+
+Creates a unicode string from a single code unit.
+
+##### Parameters
+
+* `c` - A code unit.
+
 #### get_size
 
 Type: `Minilib.Text.Unicode::UTFString a -> Std::I64`
@@ -192,6 +208,12 @@ Sets the code unit of a unicode string at the specified index.
 * `i` - The index of the code unit.
 * `c` - The code unit.
 * `str` - The unicode string to be modified.
+
+#### to_array
+
+Type: `Minilib.Text.Unicode::UTFString a -> Std::Array a`
+
+`UTFString::to_array` is a synonym of `UTFString::@data`.
 
 ## Types and aliases
 
