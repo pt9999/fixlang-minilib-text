@@ -69,6 +69,28 @@ namespace UTFString {
     to_array: UTFString a -> Array a;
     to_array = UTFString::@data;
 
+    // Converts an iterator of code units to a unicode string.
+    //
+    // `UTFString::from_iter(iter)` is equal to `UTFString::from_array(iter.to_array)`.
+    //
+    // NOTE: The iterator of code units NEED NOT to be null-terminated.
+    //
+    // # Parameters
+    // * `iter` - An iterator of code units.
+    from_iter: [iter: Iterator, Item iter = a] iter -> UTFString a;
+    from_iter = |iter| (
+        UTFString::from_array(iter.to_array)
+    );
+
+    // Converts a unicode string to an iterator of code units.
+    //
+    // `str.to_iter` is equal to `str.to_array.to_iter`.
+    //
+    // # Parameters
+    // * `str` - A unicode string.
+    to_iter: UTFString a -> ArrayIterator a;
+    to_iter = |str| str.to_array.to_iter;
+
     // Creates a unicode string from a single code unit.
     //
     // # Parameters

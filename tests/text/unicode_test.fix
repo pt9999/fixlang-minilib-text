@@ -61,6 +61,25 @@ test_utf32_string_to_array = (
     assert_equal("eq", expected, actual)
 );
 
+test_utf32_string_from_iter: TestCase;
+test_utf32_string_from_iter = (
+    make_test("test_utf32_string_from_iter") $ |_|
+    let actual: UTF32String = UTFString::from_iter([12354_U32, 12356_U32, 12358_U32].to_iter);
+    let expected = "あいう".to_utf32_string;
+    assert_equal("eq", expected, actual)
+);
+
+test_utf32_string_to_iter: TestCase;
+test_utf32_string_to_iter = (
+    make_test("test_utf32_string_to_iter") $ |_|
+    let wstr = "あいうえおかきくけこ".to_utf32_string;
+    let wc_min = "う".to_utf32_string.@(0);
+    let wc_max = "き".to_utf32_string.@(0);
+    let actual: UTF32String = wstr.to_iter.filter(|wc| wc_min <= wc && wc <= wc_max).from_iter;
+    let expected = "うえおかき".to_utf32_string;
+    assert_equal("eq", expected, actual)
+);
+
 test_utf32_string_from_code_unit: TestCase;
 test_utf32_string_from_code_unit = (
     make_test("test_utf32_string_from_code_unit") $ |_|
@@ -393,6 +412,8 @@ main = (
         test_utf32_string_make,
         test_utf32_string_from_array,
         test_utf32_string_to_array,
+        test_utf32_string_from_iter,
+        test_utf32_string_to_iter,
         test_utf32_string_from_code_unit,
         test_utf32_string_empty,
         test_utf32_string_is_empty,
@@ -417,4 +438,3 @@ main = (
     ]
     .run_test_driver
 );
-

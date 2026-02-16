@@ -1,4 +1,6 @@
 ## 0.8.3
+### Added
+- Minilib.Text.Unicode: Added `from_iter`, `to_iter`.
 ### Changed
 - Utilized minilib-common@0.12.3.
 
