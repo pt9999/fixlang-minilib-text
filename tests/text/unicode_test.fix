@@ -368,12 +368,12 @@ test_utf8_enc_dec_ok: String -> TestCase;
 test_utf8_enc_dec_ok = |str| (
     let testname = "test_utf8_enc_dec_ok (" + str + ")";
     make_test(testname) $ |_|
-    let a8 = str.get_bytes.pop_back;
+    let a8 = str.to_array;
     let a32 = utf8_to_utf32(a8, Array::empty(0));
     let a16 = utf32_to_utf16(a32, Array::empty(0));
     let a32 = utf16_to_utf32(a16, Array::empty(0));
     let a8 = utf32_to_utf8(a32, Array::empty(0));
-    let actual = a8._unsafe_to_string;
+    let actual: String = a8.from_array;
     assert_equal("eq", str, actual);;
     pure()
 );

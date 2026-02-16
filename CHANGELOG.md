@@ -1,3 +1,7 @@
+## 0.8.3
+### Changed
+- Utilized minilib-common@0.12.3.
+
 ## 0.8.2
 ### Fixed
 - Minilib.Text.Locale::get_locale: Changed `_unsafe_from_c_str_ptr` -> `unsafe_from_c_str_ptr_io`.

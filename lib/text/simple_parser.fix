@@ -35,7 +35,7 @@ namespace Stream {
     // Creates a stream from specified string.
     make: String -> Stream;
     make = |str| (
-        Stream::empty.set_iter(str.get_bytes.pop_back.to_iter.to_dyn)
+        Stream::empty.set_iter(str.to_iter.to_dyn)
     );
 
     // `stream.advance` gets next character and increment the stream position.
@@ -72,7 +72,7 @@ namespace Stream {
     // `stream.read_string(n)` reads at most `n` characters and convert them to a string.
     read_string: I64 -> Stream -> String;
     read_string = |n, s| (
-        s.@iter.take(n).from_iter._unsafe_to_string
+        StringEx::from_iter $ s.@iter.take(n)
     );
 
     // `start_stream.read_string_between(end_stream)` reads characters from `start_stream` to `end_stream`
@@ -370,7 +370,7 @@ namespace Parser {
         if str.get_size == 1 { // Optimization
             match_char(str.get_first_byte.as_some)
         };
-        str.get_bytes.pop_back.to_iter.fold(
+        str.to_iter.fold(
             unit,
             |c, p| do {
                 p;;
@@ -394,7 +394,7 @@ namespace Parser {
     match_str_class: (Char -> Bool) -> Parser String;
     match_str_class = |f| (
         repeat(match_char_class(f))
-        .map(_unsafe_to_string)
+        .map(from_array)
     );
 
     // Matches a zero-or-more-length string of whitespace characters.

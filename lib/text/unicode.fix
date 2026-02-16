@@ -18,6 +18,8 @@
 // ```
 module Minilib.Text.Unicode;
 
+import Minilib.Text.StringEx;
+
 // Unicode string type.
 //
 // A unicode string is represented as a non-null-terminated array of code units.
@@ -212,7 +214,7 @@ trait a: ToUTF8String {
 }
 
 impl String: ToUTF8String {
-    to_utf8_string = |s| UTFString { data: s.get_bytes.pop_back };
+    to_utf8_string = |s| UTFString { data: s.to_array };
 }
 
 impl UTFString U8: ToUTF8String {
