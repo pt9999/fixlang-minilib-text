@@ -1,6 +1,6 @@
 # Minilib.Text.SimpleParser
 
-Defined in minilib-text@0.8.2
+Defined in minilib-text@0.8.3
 
 Simple text parser. Customizable by monadic operations.
 - Stream of characters

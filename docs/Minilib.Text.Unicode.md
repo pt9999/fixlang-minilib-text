@@ -1,6 +1,6 @@
 # Minilib.Text.Unicode
 
-Defined in minilib-text@0.8.2
+Defined in minilib-text@0.8.3
 
 Unicode strings and conversions (UTF8/UTF16/UTF32)
 
@@ -111,6 +111,9 @@ Type: `[a : Std::Eq] Minilib.Text.Unicode::UTFString a -> Std::I64 -> Minilib.Te
 
 `str.find(token, start_idx)` finds the index where `token` firstly appears in `str` starting from `start_idx`.
 
+As a special behavior, if the `token` is empty, this function returns
+`some(start_idx)` if `start_idx <= str.get_size`, or returns `none()` otherwise.
+
 ##### Parameters
 
 * `token` - The token to be searched.
@@ -121,7 +124,15 @@ Type: `[a : Std::Eq] Minilib.Text.Unicode::UTFString a -> Std::I64 -> Minilib.Te
 
 Type: `Std::Array a -> Minilib.Text.Unicode::UTFString a`
 
-`UTFString::from_array` is a synonym of `UTFString::make`.
+Converts an array of code units to a unicode string.
+
+`UTFString::from_array(array)` is equal to `UTFString::make(array)`.
+
+NOTE: The array of code units NEED NOT to be null-terminated.
+
+##### Parameters
+
+* `array` - An array of code units.
 
 #### from_code_unit
 
@@ -132,6 +143,20 @@ Creates a unicode string from a single code unit.
 ##### Parameters
 
 * `c` - A code unit.
+
+#### from_iter
+
+Type: `[iter : Std::Iterator, Std::Iterator::Item iter = a] iter -> Minilib.Text.Unicode::UTFString a`
+
+Converts an iterator of code units to a unicode string.
+
+`UTFString::from_iter(iter)` is equal to `UTFString::from_array(iter.to_array)`.
+
+NOTE: The iterator of code units NEED NOT to be null-terminated.
+
+##### Parameters
+
+* `iter` - An iterator of code units.
 
 #### get_size
 
@@ -169,11 +194,13 @@ Returns if the unicode string is empty or not.
 
 Type: `Std::Array a -> Minilib.Text.Unicode::UTFString a`
 
-Creates a unicode string from a non-null-terminated array of code units.
+Creates a unicode string from an array of code units.
+
+NOTE: The array of code units NEED NOT to be null-terminated.
 
 ##### Parameters
 
-* `array` - A non-null-terminated array of code units.
+* `array` - An array of code units.
 
 #### pop_back
 
@@ -209,11 +236,44 @@ Sets the code unit of a unicode string at the specified index.
 * `c` - The code unit.
 * `str` - The unicode string to be modified.
 
+#### split
+
+Type: `[a : Std::Eq] Minilib.Text.Unicode::UTFString a -> Minilib.Text.Unicode::UTFString a -> Std::Iterator::ArrayIterator (Minilib.Text.Unicode::UTFString a)`
+
+Splits a unicode string by the specified separator.
+
+As a special behavior, if the separator is empty, this function returns
+an iterator where each element is a Unicode string consisting of
+a single code unit.
+
+##### Parameters
+
+* `sep` - A separator.
+* `str` - A unicode string.
+
 #### to_array
 
 Type: `Minilib.Text.Unicode::UTFString a -> Std::Array a`
 
-`UTFString::to_array` is a synonym of `UTFString::@data`.
+Converts a unicode string to an array of code units.
+
+`UTFString::to_array(str)` is equal to `str.@data`.
+
+##### Parameters
+
+* `str` - A unicode string.
+
+#### to_iter
+
+Type: `Minilib.Text.Unicode::UTFString a -> Std::Iterator::ArrayIterator a`
+
+Converts a unicode string to an iterator of code units.
+
+`str.to_iter` is equal to `str.to_array.to_iter`.
+
+##### Parameters
+
+* `str` - A unicode string.
 
 ## Types and aliases
 
@@ -243,7 +303,9 @@ Defined as: `type UTFString a = unbox struct { ...fields... }`
 
 Unicode string type.
 
-A unicode string is represented as a non-null-terminated array of code units.
+A unicode string is represented as an array of code units.
+
+NOTE: The array of code units NEED NOT to be null-terminated.
 
 ##### field `data`
 
