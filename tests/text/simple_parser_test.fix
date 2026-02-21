@@ -2,6 +2,7 @@ module SimpleParserTest;
 
 import Character;
 
+import Minilib.Monad.Error;
 import Minilib.Text.StringEx;
 import Minilib.Text.SimpleParser;
 import Minilib.Testing.UnitTest;
@@ -13,15 +14,15 @@ test_stream_readall = (
     let s: Stream = *(from_result $ str.from_string);
     let s = s.set_filename("hello.txt");
     assert_equal("filename", "hello.txt", s.@filename);;
-    assert_equal("line", 1, s.@line);;
-    assert_equal("column", 0, s.@column);;
-    assert_equal("position", 0, s.@position);;
+    assert_equal("line", Stream::_first_line, s.@line);;
+    assert_equal("column", Stream::_first_column, s.@column);;
+    assert_equal("position", Stream::_first_position, s.@position);;
     let (arr, s) = s.read_all;
     let result_str = String::_unsafe_from_c_str (arr.push_back(0_U8));
     assert_equal("array", result_str, str);;
-    assert_equal("line", 3, s.@line);;
-    assert_equal("column", 0, s.@column);;
-    assert_equal("position", 12, s.@position);;
+    assert_equal("line", Stream::_first_line + 2, s.@line);;
+    assert_equal("column", Stream::_first_column, s.@column);;
+    assert_equal("position", Stream::_first_position + 12, s.@position);;
     pure()
 );
 
@@ -86,6 +87,27 @@ test_parser_eval_parser_str = (
     assert_equal("err", err $ _NotMatch, res)
 );
 
+test_parser_error: TestCase;
+test_parser_error = (
+    make_test("test_parser_error") $ |_|
+    let res = do {
+        error("err1"): Parser String
+    }.eval_parser_str("abc");
+    assert_equal("res", err $ "line 1, column 1: err1", res)
+);
+
+test_parser_catch: TestCase;
+test_parser_catch = (
+    make_test("test_parser_catch") $ |_|
+    let res = do {
+        error("err1"): Parser String
+    }.catch(|errmsg|
+        let str = *match_str_class(is_alpha);
+        pure $ "str=" + str + " errmsg=" + errmsg
+    ).eval_parser_str("abc");
+    assert_equal("res", ok $ "str=abc errmsg=line 1, column 1: err1", res)
+);
+
 test_parser_repeat_ok: (String, String) -> TestCase;
 test_parser_repeat_ok = |(text, expected)| (
     let testname = "test_parser_repeat_ok(" + text + "," + expected + ")";
@@ -115,7 +137,7 @@ test_parser_match_str_ok = |(text, match_)| (
     make_test(testname) $ |_|
     let p = Parser::match_str(match_);
     let (_, next) = *(from_result $ p.run_parser_str(text));
-    assert_equal("column", next.@column, match_.get_size);;
+    assert_equal("column", next.@column, Stream::_first_column + match_.get_size);;
     pure()
 );
 
@@ -210,6 +232,8 @@ main = (
         test_parser_run_parser_str,
         test_parser_eval_parser,
         test_parser_eval_parser_str,
+        test_parser_error,
+        test_parser_catch,
         test_parser_repeat,
         test_parser_match_str,
         test_parser_class,

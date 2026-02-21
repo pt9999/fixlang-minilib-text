@@ -6,6 +6,7 @@ module Minilib.Text.SimpleParser;
 
 import Character;
 
+import Minilib.Monad.Error;
 import Minilib.Text.StringEx;
 
 // The type of characters. Currently only UTF-8 string is supported.
@@ -22,13 +23,17 @@ namespace Stream {
         iter: DynIterator Char     // The character iterator
     };
 
+    _first_line: I64 = 1;
+    _first_column: I64 = 1;
+    _first_position: I64 = 0;
+
     // An empty Stream.
     empty: Stream;
     empty = Stream{
         filename: "",
-        line: 1,
-        column: 0,
-        position: 0,
+        line: _first_line,
+        column: _first_column,
+        position: _first_position,
         iter: DynIterator::empty
     };
 
@@ -45,7 +50,7 @@ namespace Stream {
         // eval debug_eprintln("advance: c="+c.to_string + " pos=" + s.@position.to_string);
         let s = s.set_iter(next);
         let s = if c == '\n' {
-            s.set_line(s.@line + 1).set_column(0)
+            s.set_line(s.@line + 1).set_column(_first_column)
         } else {
             s.set_column(s.@column + 1)
         };
@@ -173,6 +178,15 @@ impl Parser: Monad {
     );
 }
 
+impl Parser: MonadErrorIF {
+    error = |errmsg| parser $ |s| s.error(errmsg);
+    catch = |handler, p| parser $ |s| (
+        let res = p.run_parser(s);
+        if res.is_ok { res };
+        handler(res.as_err).run_parser(s)
+    );
+}
+
 namespace Parser {
     // `parser.map_result(f)` maps the parser result with `f`, possibly reports
     // an error message.
@@ -245,6 +259,8 @@ namespace Parser {
         s.error(msg)
     );
 
+    // Deprecated: Use `MonadErrorIF::error`.
+    //
     // Raises the specified string as an error.
     error_parser: String -> Parser a;
     error_parser = |msg| parser $ |s| (

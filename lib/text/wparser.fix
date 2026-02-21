@@ -4,6 +4,7 @@
 // - Create complex parsers with composition
 module Minilib.Text.WParser;
 
+import Minilib.Monad.Error;
 import Minilib.Text.Unicode;
 import Minilib.Text.WideChar;
 import Minilib.Text.StringEx;
@@ -19,13 +20,17 @@ namespace WStream {
         array: Array WideChar     // The array of wide-characters
     };
 
+    _first_line: I64 = 1;
+    _first_column: I64 = 1;
+    _first_position: I64 = 0;
+
     // An empty WStream.
     empty: WStream;
     empty = WStream {
         filename: "",
-        line: 1,
-        column: 0,
-        position: 0,
+        line: _first_line,
+        column: _first_column,
+        position: _first_position,
         array: []
     };
 
@@ -44,7 +49,7 @@ namespace WStream {
         let wc = s.@array.@(pos);
         // eval debug_eprintln("advance: wc="+wc.to_string + " pos=" + s.@position.to_string);
         let s = if wc == '\n'.to_U32 {
-            s.set_line(s.@line + 1).set_column(0)
+            s.set_line(s.@line + 1).set_column(_first_column)
         } else {
             s.set_column(s.@column + 1)
         };
@@ -170,6 +175,15 @@ impl WParser: Monad {
     );
 }
 
+impl WParser: MonadErrorIF {
+    error = |errmsg| wparser $ |s| s.error(errmsg);
+    catch = |handler, p| wparser $ |s| (
+        let res = p.run_wparser(s);
+        if res.is_ok { res };
+        handler(res.as_err).run_wparser(s)
+    );
+}
+
 namespace WParser {
     // `wparser.map_result(f)` maps the parser result with `f`, possibly reports
     // an error message.
@@ -242,6 +256,8 @@ namespace WParser {
         s.error(msg)
     );
 
+    // Deprecated: Use `MonadErrorIF::error`.
+    //
     // Raises the specified string as an error.
     error_parser: ErrMsg -> WParser a;
     error_parser = |msg| wparser $ |s| (

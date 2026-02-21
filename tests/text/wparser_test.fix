@@ -1,5 +1,6 @@
 module WParserTest;
 
+import Minilib.Monad.Error;
 import Minilib.Text.StringEx;
 import Minilib.Text.Locale;
 import Minilib.Text.Unicode;
@@ -8,7 +9,7 @@ import Minilib.Text.WParser;
 import Minilib.Testing.UnitTest;
 
 // Crops the error message.
-// eg. `err("line 1, column 0: fatal_error")` => `err("fatal_error")`
+// eg. `err("line 1, column 1: fatal_error")` => `err("fatal_error")`
 crop_errmsg: Result ErrMsg a -> Result ErrMsg a;
 crop_errmsg = |res| (
     res.mod_err(|e|
@@ -26,15 +27,15 @@ test_wstream_readall = (
     let s: WStream = *str.from_string.from_result;
     let s = s.set_filename("hello.txt");
     assert_equal("filename", "hello.txt", s.@filename);;
-    assert_equal("line", 1, s.@line);;
-    assert_equal("column", 0, s.@column);;
-    assert_equal("position", 0, s.@position);;
+    assert_equal("line", WStream::_first_line, s.@line);;
+    assert_equal("column", WStream::_first_column, s.@column);;
+    assert_equal("position", WStream::_first_position, s.@position);;
     let (arr, s) = s.read_all;
     let result_str: UTF32String = UTFString::make(arr);
     assert_equal("array", result_str, str.to_utf32_string);;
-    assert_equal("line", 3, s.@line);;
-    assert_equal("column", 0, s.@column);;
-    assert_equal("position", 10, s.@position);;
+    assert_equal("line", WStream::_first_line + 2, s.@line);;
+    assert_equal("column", WStream::_first_column, s.@column);;
+    assert_equal("position", WStream::_first_position + 10, s.@position);;
     pure()
 );
 
@@ -64,6 +65,27 @@ test_wstream_error = (
     let errmsg = res.as_err;
     assert_equal("errmsg", "hello.txt line 1, column 2: errormsg", errmsg);;
     pure()
+);
+
+test_wparser_error: TestCase;
+test_wparser_error = (
+    make_test("test_wparser_error") $ |_|
+    let res = do {
+        error("err1"): WParser String
+    }.eval_wparser_str("あいう");
+    assert_equal("res", err $ "line 1, column 1: err1", res)
+);
+
+test_wparser_catch: TestCase;
+test_wparser_catch = (
+    make_test("test_wparser_catch") $ |_|
+    let res = do {
+        error("err1"): WParser String
+    }.catch(|errmsg|
+        let wstr = *match_wstr_class(WideChar::is_alpha);
+        pure $ "wstr=" + wstr.to_string + " errmsg=" + errmsg
+    ).eval_wparser_str("あいう");
+    assert_equal("res", ok $ "wstr=あいう errmsg=line 1, column 1: err1", res)
 );
 
 test_wparser_map_result: TestCase;
@@ -354,7 +376,7 @@ test_wparser_match_wstr = (
             err(e) => assert_equal("err", expected, err(e)),
             ok(((), stream)) => (
                 assert_equal("ok", expected, ok());;
-                assert_equal("column", stream.@column, str.to_utf32_string.get_size)
+                assert_equal("column", stream.@column, WStream::_first_column + str.to_utf32_string.get_size)
             )
         }
     )
@@ -429,6 +451,8 @@ main = (
         test_wstream_readall,
         test_wstream_read_wstring_between,
         test_wstream_error,
+        test_wparser_error,
+        test_wparser_catch,
         test_wparser_map_result,
         test_wparser_unit,
         test_wparser_get_stream,

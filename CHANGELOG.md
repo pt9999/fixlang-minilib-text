@@ -1,3 +1,14 @@
+## 0.9.0
+### Breaking Changes
+- Minilib.Text.SimpleParser: Changed the first column number of `Stream` from 0 to 1.
+- Minilib.Text.WParser: Changed the first column number of `WStream` from 0 to 1.
+### Added
+- Minilib.Text.SimpleParser: Added `impl Parser: MonadErrorIF`.
+- Minilib.Text.WParser: Added `impl WParser: MonadErrorIF`.
+### Changed
+- Minilib.Text.SimpleParser: `error_parser` is now deprecated.
+- Minilib.Text.WParser: `error_parser` is now deprecated.
+
 ## 0.8.3
 ### Added
 - Minilib.Text.Unicode: Added `from_iter`, `to_iter`, `split`.
