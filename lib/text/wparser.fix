@@ -422,7 +422,7 @@ namespace WParser {
     match_wstr_class_digit: WParser UTF32String;
     match_wstr_class_digit = match_wstr_class(WideChar::is_digit);
 */
-    // Matches an integer.
+    // Matches a non-negative integer.
     match_integer: WParser I64;
     match_integer = (
         match_wstr_class(WideChar::is_digit)

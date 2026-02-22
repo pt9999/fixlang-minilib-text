@@ -420,7 +420,7 @@ namespace Parser {
     match_str_class_digit: Parser String;
     match_str_class_digit = match_str_class(Character::is_digit);
 
-    // Matches an integer.
+    // Matches a non-negative integer.
     match_integer: Parser I64;
     match_integer = (
         match_str_class(is_digit)
