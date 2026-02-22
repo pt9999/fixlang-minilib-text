@@ -1,6 +1,6 @@
 # Minilib.Text.Unicode
 
-Defined in minilib-text@0.8.3
+Defined in minilib-text@0.9.0
 
 Unicode strings and conversions (UTF8/UTF16/UTF32)
 
@@ -180,6 +180,18 @@ Returns a substring of the specified range.
 * `end` - The end index of the substring.
 * `str` - The unicode string to be sliced.
 
+#### get_width
+
+Type: `[s : Minilib.Text.Unicode::ToUTF32String] s -> Std::I64`
+
+Returns the width of a wide string.
+A wide character in half-width form counts as 1, a wide character in full-width form counts as 2.
+Returns -1 if the wide string contains non-printable characters.
+
+##### Parameters
+
+* `str` - A string which can be converted to `UTF32String`.
+
 #### is_empty
 
 Type: `Minilib.Text.Unicode::UTFString a -> Std::Bool`
@@ -274,6 +286,17 @@ Converts a unicode string to an iterator of code units.
 ##### Parameters
 
 * `str` - A unicode string.
+
+#### to_wide_char
+
+Type: `[s : Minilib.Text.Unicode::ToUTF32String] s -> Minilib.Text.WideChar::WideChar`
+
+Converts the string to `UTF32String`, and returns the first wide character.
+If the coverted wide string is empty, this function returns `0_U32`.
+
+##### Parameters
+
+* `str` - A string that can be converted to `UTF32String`.
 
 ## Types and aliases
 

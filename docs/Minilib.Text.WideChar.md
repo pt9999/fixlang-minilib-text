@@ -1,6 +1,6 @@
 # Minilib.Text.WideChar
 
-Defined in minilib-text@0.8.3
+Defined in minilib-text@0.9.0
 
 Wide-character definition and classification.
 
@@ -18,18 +18,6 @@ you may need to call `Locale::init_locale` or `Locale::set_locale` first.
 ## Values
 
 ### namespace Minilib.Text.WideChar
-
-#### get_width
-
-Type: `[s : Minilib.Text.Unicode::ToUTF32String] s -> Std::I64`
-
-Returns the width of a wide string.
-A wide character in half-width form counts as 1, a wide character in full-width form counts as 2.
-Returns -1 if the wide string contains non-printable characters.
-
-##### Parameters
-
-* `str` - A string which can be converted to `UTF32String`.
 
 #### is_alnum
 

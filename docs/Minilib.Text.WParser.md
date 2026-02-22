@@ -1,6 +1,6 @@
 # Minilib.Text.WParser
 
-Defined in minilib-text@0.8.3
+Defined in minilib-text@0.9.0
 
 Wide-character text parser. Customizable by monadic operations.
 - Stream of wide-characters
@@ -20,6 +20,8 @@ Prints the parser result.
 #### error_parser
 
 Type: `Std::ErrMsg -> Minilib.Text.WParser::WParser a`
+
+Deprecated: Use `MonadErrorIF::error`.
 
 Raises the specified string as an error.
 
@@ -81,7 +83,7 @@ Matches zero-length string at the end of stream.
 
 Type: `Minilib.Text.WParser::WParser Std::I64`
 
-Matches an integer.
+Matches a non-negative integer.
 
 #### match_one_of_wchar
 
@@ -288,6 +290,8 @@ Type: `Std::Array Minilib.Text.WideChar::WideChar`
 ## Traits and aliases
 
 ## Trait implementations
+
+### impl `Minilib.Text.WParser::WParser : Minilib.Monad.Error::MonadErrorIF`
 
 ### impl `Minilib.Text.WParser::WParser : Std::Functor`
 

@@ -1,6 +1,6 @@
 # Minilib.Text.SimpleParser
 
-Defined in minilib-text@0.8.3
+Defined in minilib-text@0.9.0
 
 Simple text parser. Customizable by monadic operations.
 - Stream of characters
@@ -28,6 +28,8 @@ Prints the parser result.
 #### error_parser
 
 Type: `Std::String -> Minilib.Text.SimpleParser::Parser a`
+
+Deprecated: Use `MonadErrorIF::error`.
 
 Raises the specified string as an error.
 
@@ -97,6 +99,8 @@ Matches a character satisfying the specified condition.
 
 Type: `Std::U8 -> Minilib.Text.SimpleParser::Parser (Std::Option Std::U8)`
 
+Deprecated: Please use `match_char(c).if_exists`.
+
 Matches a single character if it exists.
 The parsed result is `some(c)` if it exists,
 `none()` if it does not exist.
@@ -117,7 +121,7 @@ Matches zero-length string at the end of stream.
 
 Type: `Minilib.Text.SimpleParser::Parser Std::I64`
 
-Matches an integer.
+Matches a non-negative integer.
 
 #### match_one_of_char
 
@@ -327,13 +331,15 @@ Type: `Std::I64`
 
 Type: `Std::I64`
 
-##### field `iter`
+##### field `array`
 
-Type: `Std::Iterator::DynIterator Minilib.Text.SimpleParser::Char`
+Type: `Std::Array Minilib.Text.SimpleParser::Char`
 
 ## Traits and aliases
 
 ## Trait implementations
+
+### impl `Minilib.Text.SimpleParser::Parser : Minilib.Monad.Error::MonadErrorIF`
 
 ### impl `Minilib.Text.SimpleParser::Parser : Std::Functor`
 
