@@ -254,6 +254,24 @@ test_utf32_string_split = (
     )
 );
 
+test_to_wide_char: TestCase;
+test_to_wide_char = (
+    make_test("test_to_wide_char") $ |_|
+    let str = "";
+    assert_equal("str size=0", 0_U32, str.to_wide_char);;
+    let str = "あ";
+    assert_equal("str size=1", 12354_U32, str.to_wide_char);;
+    let str = "A";
+    assert_equal("str size=1", 65_U32, str.to_wide_char);;
+    let wstr: UTF8String = "あ".to_utf8_string;
+    assert_equal("utf8 size=1", 12354_U32, wstr.to_wide_char);;
+    let wstr: UTF16String = "あ".to_utf16_string;
+    assert_equal("utf16 size=1", 12354_U32, wstr.to_wide_char);;
+    let wstr: UTF32String = "あ".to_utf32_string;
+    assert_equal("utf32 size=1", 12354_U32, wstr.to_wide_char);;
+    pure()
+);
+
 // test for `Zero`, `Add`
 test_utf32_string_zero_add: TestCase;
 test_utf32_string_zero_add = (
@@ -465,6 +483,7 @@ main = (
         test_utf32_string_pop_back,
         test_utf32_string_set,
         test_utf32_string_split,
+        test_to_wide_char,
         test_utf32_string_zero_add,
         test_utf32_string_eq,
         test_utf32_string_less_than,

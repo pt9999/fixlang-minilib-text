@@ -18,6 +18,7 @@
 // ```
 module Minilib.Text.Unicode;
 
+import Minilib.Text.WideChar;
 import Minilib.Text.StringEx;
 
 // Unicode string type.
@@ -238,6 +239,20 @@ namespace UTFString {
             }
         )
     );
+
+    // Converts the string to `UTF32String`, and returns the first wide character.
+    // If the coverted wide string is empty, this function returns `0_U32`.
+    //
+    // # Parameters
+    //
+    // * `str` - A string that can be converted to `UTF32String`.
+    to_wide_char: [s: ToUTF32String] s -> WideChar;
+    to_wide_char = |str| (
+        let wstr = str.to_utf32_string;
+        if wstr.get_size == 0 { 0_U32 };
+        wstr.@(0)
+    );
+
 }
 
 // An empty unicode string.

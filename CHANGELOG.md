@@ -6,6 +6,7 @@
 ### Added
 - Minilib.Text.SimpleParser: Added `impl Parser: MonadErrorIF`.
 - Minilib.Text.WParser: Added `impl WParser: MonadErrorIF`.
+- Minilib.Text.Unicode: Added `UTFString::to_wide_char`.
 ### Changed
 - Minilib.Text.SimpleParser: `error_parser`, `match_char_if_exists` is now deprecated.
 - Minilib.Text.WParser: `error_parser` is now deprecated.
