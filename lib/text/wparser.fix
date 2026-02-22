@@ -140,7 +140,7 @@ namespace WParser {
 
     // Apply a stream to a parser and return the parsed value.
     eval_wparser: WStream -> WParser a -> Result ErrMsg a;
-    eval_wparser = |s, p| p.run_wparser.map(Tuple2::@0);
+    eval_wparser = |s, p| p.run_wparser(s).map(Tuple2::@0);
 
     // Create a stream from a string, then apply this stream to a parser
     // and return the parsed value and the next stream position.

@@ -11,6 +11,8 @@
 - Minilib.Text.SimpleParser: `error_parser`, `match_char_if_exists` is now deprecated.
 - Minilib.Text.WParser: `error_parser` is now deprecated.
 - Clarified in the documentation that `match_integer` matches a non-negative integer.
+### Fixed
+- Minilib.Text.WParser: Fixed `eval_wparser` did not work.
 
 ## 0.8.3
 ### Added
