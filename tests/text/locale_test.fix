@@ -29,7 +29,7 @@ test_set_locale = (
     let ret = *set_locale(lc_all, locale_C_UTF8);
     assert_equal("LC_ALL,C", locale_C_UTF8, ret);;
     /*
-    // The following tests do not always succeed
+    // The following tests do not always succeed (platform dependent)
     let ret = *set_locale(lc_all, "en_US.UTF-8");
     assert_equal("LC_ALL,en_US.UTF-8", "en_US.UTF-8", ret);;
     */
@@ -67,10 +67,10 @@ test_get_locale = (
     // set LC_TIME=C.UTF-8
     set_locale(lc_time, locale_C_UTF8);;
     let ret_get = *get_locale(lc_time);
-    assert_equal("getlocale(LC_TIME) after setlocale(LC_TIME,en_US.UTF-8)", locale_C_UTF8, ret_get);;
+    assert_equal("getlocale(LC_TIME) after setlocale(LC_TIME,C.UTF-8)", locale_C_UTF8, ret_get);;
     let ret_get = *get_locale(lc_all);
-    assert_true("getlocale(LC_ALL) after setlocale(LC_TIME,en_US.UTF-8)", locale_C != ret_get);;
-    assert_true("getlocale(LC_ALL) after setlocale(LC_TIME,en_US.UTF-8)", locale_C_UTF8 != ret_get);;
+    assert_true("getlocale(LC_ALL) after setlocale(LC_TIME,C.UTF-8)", locale_C != ret_get);;
+    assert_true("getlocale(LC_ALL) after setlocale(LC_TIME,C.UTF-8)", locale_C_UTF8 != ret_get);;
 
     pure()
 );
