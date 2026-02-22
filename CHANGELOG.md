@@ -1,5 +1,6 @@
 ## 0.9.0
 ### Breaking Changes
+- Minilib.Text.SimpleParser: `Stream` now holds an array of characters instead of an iterator of characters.
 - Minilib.Text.SimpleParser: Changed the first column number of `Stream` from 0 to 1.
 - Minilib.Text.WParser: Changed the first column number of `WStream` from 0 to 1.
 ### Added
