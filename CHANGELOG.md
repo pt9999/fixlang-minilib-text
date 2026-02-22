@@ -6,7 +6,7 @@
 - Minilib.Text.SimpleParser: Added `impl Parser: MonadErrorIF`.
 - Minilib.Text.WParser: Added `impl WParser: MonadErrorIF`.
 ### Changed
-- Minilib.Text.SimpleParser: `error_parser` is now deprecated.
+- Minilib.Text.SimpleParser: `error_parser`, `match_char_if_exists` is now deprecated.
 - Minilib.Text.WParser: `error_parser` is now deprecated.
 
 ## 0.8.3

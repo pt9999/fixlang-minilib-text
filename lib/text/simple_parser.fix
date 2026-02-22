@@ -349,6 +349,8 @@ namespace Parser {
         )
     );
 
+    // Deprecated: Please use `match_char(c).if_exists`.
+    //
     // Matches a single character if it exists.
     // The parsed result is `some(c)` if it exists,
     // `none()` if it does not exist.
@@ -356,13 +358,6 @@ namespace Parser {
     match_char_if_exists = |c| (
         match_any_char.filter(|c1| c1 == c).map(some).or_else(pure $ none())
     );
-    /*
-    match_char_if_exists = |c| (
-        let n: Option U8 = none();
-        let p: Parser (Option U8) = match_any_char.filter(|c1| c1 == c).map(some);
-        p.or_else(pure $ n)
-    );
-    */
 
     // Matches a character which is included in the specified string.
     // The parsed result is a string consisting of the single matched character.
