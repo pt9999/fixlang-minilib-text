@@ -78,16 +78,3 @@ wcswidth = |wcs| (
         FFI_CALL[CInt wcswidth(Ptr, CSizeT), p_wcs, size]
     ).to_I64
 );
-
-// Returns the width of a wide string.
-// A wide character in half-width form counts as 1, a wide character in full-width form counts as 2.
-// Returns -1 if the wide string contains non-printable characters.
-//
-// # Parameters
-// * `str` - A string which can be converted to `UTF32String`.
-get_width: [s: ToUTF32String] s -> I64;
-get_width = |str| (
-    let wstr = str.to_utf32_string;
-    let wchars = wstr.@data;
-    wcswidth(wchars)
-);

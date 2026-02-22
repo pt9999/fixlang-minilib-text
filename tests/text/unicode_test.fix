@@ -254,6 +254,27 @@ test_utf32_string_split = (
     )
 );
 
+test_get_width: TestCase;
+test_get_width = make_table_test("test_get_width",
+    [
+        ("", 0),
+        (" \t09AZaz!#", -1),        // '\t' is nonprintable
+        ("  09AZaz!#", 10),
+        ("あ漢０Ａ😊😀", 12),
+        ("  09AZaz!#あ漢０Ａ😊😀", 22),
+    ],
+    |(str, expected)|
+    let actual = str.get_width;
+    assert_equal("String get_width(" + str + ")", expected, actual);;
+    let actual = str.to_utf8_string.get_width;
+    assert_equal("UTF8String get_width(" + str + ")", expected, actual);;
+    let actual = str.to_utf16_string.get_width;
+    assert_equal("UTF16String get_width(" + str + ")", expected, actual);;
+    let actual = str.to_utf32_string.get_width;
+    assert_equal("UTF32String get_width(" + str + ")", expected, actual);;
+    pure()
+);
+
 test_to_wide_char: TestCase;
 test_to_wide_char = (
     make_test("test_to_wide_char") $ |_|
@@ -483,6 +504,7 @@ main = (
         test_utf32_string_pop_back,
         test_utf32_string_set,
         test_utf32_string_split,
+        test_get_width,
         test_to_wide_char,
         test_utf32_string_zero_add,
         test_utf32_string_eq,

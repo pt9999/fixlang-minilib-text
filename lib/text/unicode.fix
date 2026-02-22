@@ -120,6 +120,19 @@ namespace UTFString {
     get_size: UTFString a -> I64;
     get_size = |s| s.@data.get_size;
 
+    // Returns the width of a wide string.
+    // A wide character in half-width form counts as 1, a wide character in full-width form counts as 2.
+    // Returns -1 if the wide string contains non-printable characters.
+    //
+    // # Parameters
+    // * `str` - A string which can be converted to `UTF32String`.
+    get_width: [s: ToUTF32String] s -> I64;
+    get_width = |str| (
+        let wstr = str.to_utf32_string;
+        let wchars = wstr.@data;
+        wcswidth(wchars)
+    );
+
     // Gets the code unit of a unicode string at the specified index.
     //
     // # Parameters

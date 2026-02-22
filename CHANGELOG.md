@@ -3,6 +3,7 @@
 - Minilib.Text.SimpleParser: `Stream` now holds an array of characters instead of an iterator of characters.
 - Minilib.Text.SimpleParser: Changed the first column number of `Stream` from 0 to 1.
 - Minilib.Text.WParser: Changed the first column number of `WStream` from 0 to 1.
+- Moved `Minilib.Text.WideChar::WideChar::get_width` to `Minilib.Text.Unicode::UTFString::get_width`.
 ### Added
 - Minilib.Text.SimpleParser: Added `impl Parser: MonadErrorIF`.
 - Minilib.Text.WParser: Added `impl WParser: MonadErrorIF`.

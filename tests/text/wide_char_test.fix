@@ -143,21 +143,6 @@ test_wcswidth = make_table_test("test_wcswidth",
     assert_equal("wcswidth(" + str + ")", expected, actual)
 );
 
-test_get_width: TestCase;
-test_get_width = make_table_test("test_get_width",
-    [
-        ("", 0),
-        (" \t09AZaz!#", -1),        // '\t' is nonprintable
-        ("  09AZaz!#", 10),
-        ("あ漢０Ａ😊😀", 12),
-        ("  09AZaz!#あ漢０Ａ😊😀", 22),
-    ],
-    |(str, expected)|
-    let actual = str.get_width;
-    assert_equal("get_width(" + str + ")", expected, actual)
-);
-
-
 main: IO ();
 main = (
     [
@@ -175,7 +160,6 @@ main = (
         test_is_xdigit,
         test_wcwidth,
         test_wcswidth,
-        test_get_width,
     ]
     // run all tests with LC_ALL=C.UTF-8
     .map(map(with_locale(lc_all, locale_C_UTF8)))
