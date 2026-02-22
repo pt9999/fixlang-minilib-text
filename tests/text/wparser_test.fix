@@ -67,6 +67,55 @@ test_wstream_error = (
     pure()
 );
 
+
+test_wparser_run_wparser: TestCase;
+test_wparser_run_wparser = (
+    make_test("test_wparser_run_wparser") $ |_|
+    let str = "あ";
+    let s: WStream = WStream::make(str);
+    let res = match_any_wchar.run_wparser(s);
+    assert_true("is_ok", res.is_ok);;
+    let (wc, s1) = res.as_ok;
+    assert_equal("wc", "あ".to_wide_char, wc);;
+    assert_equal("pos", 1, s1.@position);;
+    let res = match_wchar("い".to_wide_char).run_wparser(s);
+    assert_true("is_err", res.is_err);;
+    assert_equal("not_match", _NotMatch, res.as_err)
+);
+
+test_wparser_run_wparser_str: TestCase;
+test_wparser_run_wparser_str = (
+    make_test("test_wparser_run_wparser_str") $ |_|
+    let res = match_any_wchar.run_wparser_str("あ");
+    assert_true("is_ok", res.is_ok);;
+    let (wc, s1) = res.as_ok;
+    assert_equal("wc", "あ".to_wide_char, wc);;
+    assert_equal("pos", 1, s1.@position);;
+    let res = match_wchar("い".to_wide_char).run_wparser_str("あ");
+    assert_true("is_err", res.is_err);;
+    assert_equal("not_match", _NotMatch, res.as_err)
+);
+
+test_wparser_eval_wparser: TestCase;
+test_wparser_eval_wparser = (
+    make_test("test_wparser_eval_wparser") $ |_|
+    let str = "あ";
+    let s: WStream = WStream::make(str);
+    let res = match_any_wchar.eval_wparser(s);
+    assert_equal("ok", ok $ "あ".to_wide_char, res);;
+    let res = match_wchar("い".to_wide_char).eval_wparser(s);
+    assert_equal("err", err $ _NotMatch, res)
+);
+
+test_wparser_eval_wparser_str: TestCase;
+test_wparser_eval_wparser_str = (
+    make_test("test_wparser_eval_wparser_str") $ |_|
+    let res = match_any_wchar.eval_wparser_str("あ");
+    assert_equal("ok", ok $ "あ".to_wide_char, res);;
+    let res = match_wchar("い".to_wide_char).eval_wparser_str("あ");
+    assert_equal("err", err $ _NotMatch, res)
+);
+
 test_wparser_error: TestCase;
 test_wparser_error = (
     make_test("test_wparser_error") $ |_|
@@ -451,6 +500,10 @@ main = (
         test_wstream_readall,
         test_wstream_read_wstring_between,
         test_wstream_error,
+        test_wparser_run_wparser,
+        test_wparser_run_wparser_str,
+        test_wparser_eval_wparser,
+        test_wparser_eval_wparser_str,
         test_wparser_error,
         test_wparser_catch,
         test_wparser_map_result,

@@ -7,6 +7,18 @@ import Minilib.Text.StringEx;
 import Minilib.Text.SimpleParser;
 import Minilib.Testing.UnitTest;
 
+// Crops the error message.
+// eg. `err("line 1, column 1: fatal_error")` => `err("fatal_error")`
+crop_errmsg: Result ErrMsg a -> Result ErrMsg a;
+crop_errmsg = |res| (
+    res.mod_err(|e|
+        match e.find_last_byte(':') {
+            none() => e,
+            some(i) => e.get_sub(i + 2, e.get_size)
+        }
+    )
+);
+
 test_stream_readall: TestCase;
 test_stream_readall = (
     make_test("test_stream_readall") $ |_|
@@ -23,6 +35,21 @@ test_stream_readall = (
     assert_equal("line", Stream::_first_line + 2, s.@line);;
     assert_equal("column", Stream::_first_column, s.@column);;
     assert_equal("position", Stream::_first_position + 12, s.@position);;
+    pure()
+);
+
+test_stream_read_string_between: TestCase;
+test_stream_read_string_between = (
+    make_test("test_stream_read_string_between") $ |_|
+    let str = "helloworld";
+    let s: Stream = Stream::make(str);
+    let begin_stream = s.set_position(2);
+    let end_stream = s.set_position(7);
+    let expected = "llowo";
+    let actual = begin_stream.read_string_between(end_stream);
+    assert_equal("eq", expected, actual);;
+    let actual = end_stream.read_string_between(begin_stream);
+    assert_equal("reversed", expected, actual);;
     pure()
 );
 
@@ -108,27 +135,245 @@ test_parser_catch = (
     assert_equal("res", ok $ "str=abc errmsg=line 1, column 1: err1", res)
 );
 
-test_parser_repeat_ok: (String, String) -> TestCase;
-test_parser_repeat_ok = |(text, expected)| (
-    let testname = "test_parser_repeat_ok(" + text + "," + expected + ")";
-    make_test(testname) $ |_|
-    let p = Parser::repeat(Parser::match_any_char.filter(|c| !c.is_space));
-    let (array, next) = *(from_result $ p.run_parser_str(text));
-    let actual: String = array.from_array;
-    assert_equal("expect", expected, actual);;
+test_parser_map_result: TestCase;
+test_parser_map_result = (
+    make_table_test("test_parser_map_result",
+        [
+            ("abc", "err", err $ _NotMatch),
+            ("abc", "inc", ok $ 'b'),
+        ],
+        |(text, op, expected)|
+        let p = match_any_char;
+        let p = p.map_result(|a|
+            if op == "err" { err $ _NotMatch };
+            if op == "inc" { ok $ a + 1_U8 };
+            undefined("invalid op: " + op)
+        );
+        let actual = p.eval_parser_str(text);
+        assert_equal("eq", expected, actual)
+    )
+);
+
+test_parser_unit: TestCase;
+test_parser_unit = (
+    make_test("test_parser_unit", |_|
+        let p = unit;
+        let res = p.run_parser_str("abc");
+        assert_true("ok", res.is_ok);;
+        let ((), stream) = res.as_ok;
+        assert_equal("position", 0, stream.@position)
+    )
+);
+
+test_parser_get_stream: TestCase;
+test_parser_get_stream = (
+    make_test("test_parser_get_stream", |_|
+        let p = do {
+            let a = *match_any_char;
+            let begin_stream = *get_stream;
+            let b = *match_any_char;
+            let c = *match_any_char;
+            let end_stream = *get_stream;
+            let d = *match_any_char;
+            let outer = StringEx::from_array $ [a, b, c, d];
+            let inner = begin_stream.read_string_between(end_stream);
+            pure $ (outer, inner)
+        };
+        let res = p.run_parser_str("ABCDE");
+        assert_true("ok", res.is_ok);;
+        let ((outer, inner), stream) = res.as_ok;
+        assert_equal("eq", "ABCD", outer);;
+        assert_equal("eq", "BC", inner);;
+        assert_equal("position", 4, stream.@position)
+    )
+);
+
+test_parser_filter: TestCase;
+test_parser_filter = (
+    make_table_test("test_parser_filter",
+        [
+            ("cde", 'a', 'e', ok $ 'c'),
+            ("cde", 'f', 'j', err $ _NotMatch),
+            ("hij", 'f', 'j', ok $ 'h'),
+        ],
+        |(text, min_c, max_c, expected)|
+        let p = match_any_char.filter(|c| min_c <= c && c <= max_c);
+        let actual = p.eval_parser_str(text);
+        assert_equal("eq", expected, actual)
+    )
+);
+
+test_parser_or_else: TestCase;
+test_parser_or_else = (
+    make_test("test_parser_or_else") $ |_|
+    let fatal: ErrMsg = "fatal_error";
+    let p1: Parser Char = not_match;
+    let p2: Parser Char = error_parser(fatal);
+    let p3: Parser Char = match_any_char;
+    let text = "abc";
+    let run = |p| p.eval_parser_str(text).crop_errmsg;
+    let a = 'a';
+    assert_equal("pattern 11", err $ _NotMatch, run $ p1.or_else(p1));;
+    assert_equal("pattern 12", err $ fatal, run $ p1.or_else(p2));;
+    assert_equal("pattern 13", ok $ a, run $ p1.or_else(p3));;
+    assert_equal("pattern 21", err $ fatal, run $ p2.or_else(p1));;
+    assert_equal("pattern 22", err $ fatal, run $ p2.or_else(p2));;
+    assert_equal("pattern 23", err $ fatal, run $ p2.or_else(p3));;
+    assert_equal("pattern 31", ok $ a, run $ p3.or_else(p1));;
+    assert_equal("pattern 32", ok $ a, run $ p3.or_else(p2));;
+    assert_equal("pattern 33", ok $ a, run $ p3.or_else(p3));;
     pure()
 );
 
-// TODO: add tests
+test_parser_or_error: TestCase;
+test_parser_or_error = (
+    make_test("test_parser_or_error") $ |_|
+    let fatal: ErrMsg = "fatal_error";
+    let fatal2: ErrMsg = "fatal_error2";
+    let p1: Parser Char = not_match;
+    let p2: Parser Char = error_parser(fatal);
+    let p3: Parser Char = match_any_char;
+    let text = "abc";
+    let run = |p| p.eval_parser_str(text).crop_errmsg;
+    assert_equal("pattern 1", err $ fatal2, run $ p1.or_error(fatal2));;
+    assert_equal("pattern 2", err $ fatal2, run $ p2.or_error(fatal2));;
+    assert_equal("pattern 3", ok $ 'a', run $ p3.or_error(fatal2));;
+    pure()
+);
+
+test_parser_error_parser: TestCase;
+test_parser_error_parser = (
+    make_test("test_parser_error_parser") $ |_|
+    let p: Parser Char = error_parser("fatal_error");
+    assert_equal("eq", err $ "fatal_error", p.eval_parser_str("abc").crop_errmsg)
+);
+
+test_parser_not_match: TestCase;
+test_parser_not_match = (
+    make_test("test_parser_not_match") $ |_|
+    let p: Parser Char = not_match;
+    assert_equal("eq", err $ _NotMatch, p.eval_parser_str("abc").crop_errmsg)
+);
 
 test_parser_repeat: TestCase;
 test_parser_repeat = (
-    [
-        test_parser_repeat_ok $ ("abc def", "abc"),
-        test_parser_repeat_ok $ ("a1b2 c3", "a1b2"),
-        test_parser_repeat_ok $ (" ab", "")
-    ]
-    .run_tests
+    make_table_test("test_parser_repeat",
+        [
+            ("abc def", ok $ "abc"),
+            ("a1b2 c3", ok $ "a1b2"),
+            (" ab", ok $ "")
+        ],
+        |(text, expected)|
+        let p = repeat(match_any_char.filter(|c| !c.is_space)).map(StringEx::from_array);
+        let actual = p.eval_parser_str(text);
+        assert_equal("expect", expected, actual)
+    )
+);
+
+test_parser_zero_or_more: TestCase;
+test_parser_zero_or_more = (
+    make_table_test("test_parser_zero_or_more",
+        [
+            ("", ok $ ""),
+            ("a", ok $ "a"),
+            ("abcde", ok $ "abcde"),
+        ],
+        |(text, expected)|
+        let p = match_any_char.zero_or_more.map(StringEx::from_array);
+        let actual= p.eval_parser_str(text);
+        assert_equal("eq", expected, actual)
+    )
+);
+
+test_parser_one_or_more: TestCase;
+test_parser_one_or_more = (
+    make_table_test("test_parser_one_or_more",
+        [
+            ("", err $ _NotMatch),
+            ("a", ok $ "a"),
+            ("abcde", ok $ "abcde"),
+        ],
+        |(text, expected)|
+        let p = match_any_char.one_or_more.map(StringEx::from_array);
+        let actual = p.eval_parser_str(text);
+        assert_equal("eq", expected, actual)
+    )
+);
+
+test_parser_if_exists: TestCase;
+test_parser_if_exists = (
+    make_table_test("test_parser_if_exists",
+        [
+            ("", ok $ none()),
+            ("a", ok $ some $ "a"),
+            ("abcde", ok $ some $ "a"),
+        ],
+        |(text, expected)|
+        let p = match_any_char.if_exists.map(map(String::from_U8));
+        let actual = p.eval_parser_str(text);
+        assert_equal("eq", expected, actual)
+    )
+);
+
+test_parser_match_end_of_stream: TestCase;
+test_parser_match_end_of_stream = (
+    make_table_test("test_parser_match_end_of_stream",
+        [
+            ("", ok()),
+            ("a", err $ "Missing EOS"),
+        ],
+        |(text, expected)|
+        let p = match_end_of_stream;
+        let actual = p.eval_parser_str(text).crop_errmsg;
+        assert_equal("eq", expected, actual)
+    )
+);
+
+test_parser_match_any_char: TestCase;
+test_parser_match_any_char = (
+    make_table_test("test_parser_match_any_char",
+        [
+            ("", err $ _NotMatch),
+            ("a", ok $ 'a'),
+            ("\\", ok $ '\\'),
+        ],
+        |(text, expected)|
+        let p = match_any_char;
+        let actual = p.eval_parser_str(text);
+        assert_equal("eq", expected, actual)
+    )
+);
+
+test_parser_match_char: TestCase;
+test_parser_match_char = (
+    make_table_test("test_parser_match_char",
+        [
+            ("", 'a', err $ _NotMatch),
+            ("abc", 'a', ok()),
+            ("abc", 'b', err $ _NotMatch),
+        ],
+        |(text, char, expected)|
+        let p = match_char(char);
+        let actual = p.eval_parser_str(text);
+        assert_equal("eq", expected, actual)
+    )
+);
+
+test_parser_match_one_of_char: TestCase;
+test_parser_match_one_of_char = (
+    make_table_test("test_parser_match_one_of_char",
+        [
+            ("", "", err $ _NotMatch),
+            ("", "abc", err $ _NotMatch),
+            ("b", "", err $ _NotMatch),
+            ("b", "abc", ok $ "b"),
+            ("z", "abc", err $ _NotMatch),
+        ],
+        |(text, chars, expected)|
+        let p = match_one_of_char(chars);
+        let actual = p.eval_parser_str(text);
+        assert_equal("eq", expected, actual)
+    )
 );
 
 test_parser_match_str_ok: (String, String) -> TestCase;
@@ -161,21 +406,21 @@ test_parser_match_str = (
     .run_tests
 );
 
-test_parser_class_ok: (Parser String, String, String) -> TestCase;
-test_parser_class_ok = |(p, text, expected)| (
-    let testname = "test_parser_class_ok(" + text + "," + expected + ")";
+test_parser_match_str_class_ok: (Parser String, String, String) -> TestCase;
+test_parser_match_str_class_ok = |(p, text, expected)| (
+    let testname = "test_parser_match_str_class_ok(" + text + "," + expected + ")";
     make_test(testname) $ |_|
     let (token, next) = *(from_result $ p.run_parser_str(text));
     assert_equal("token", expected, token);;
     pure()
 );
 
-test_parser_class: TestCase;
-test_parser_class = (
+test_parser_match_str_class: TestCase;
+test_parser_match_str_class = (
     [
-        test_parser_class_ok $ (match_str_class_digit, "01234abc", "01234"),
-        test_parser_class_ok $ (match_str_class_digit, "abc0123", ""),
-        test_parser_class_ok $ (match_str_class_lower, "abc0123", "abc")
+        test_parser_match_str_class_ok $ (match_str_class_digit, "01234abc", "01234"),
+        test_parser_match_str_class_ok $ (match_str_class_digit, "abc0123", ""),
+        test_parser_match_str_class_ok $ (match_str_class_lower, "abc0123", "abc")
     ].run_tests
 );
 
@@ -227,6 +472,7 @@ main: IO ();
 main = (
     [
         test_stream_readall,
+        test_stream_read_string_between,
         test_stream_error,
         test_parser_run_parser,
         test_parser_run_parser_str,
@@ -234,9 +480,24 @@ main = (
         test_parser_eval_parser_str,
         test_parser_error,
         test_parser_catch,
+        test_parser_map_result,
+        test_parser_unit,
+        test_parser_get_stream,
+        test_parser_filter,
+        test_parser_or_else,
+        test_parser_or_error,
+        test_parser_error_parser,
+        test_parser_not_match,
         test_parser_repeat,
+        test_parser_zero_or_more,
+        test_parser_one_or_more,
+        test_parser_if_exists,
+        test_parser_match_end_of_stream,
+        test_parser_match_any_char,
+        test_parser_match_one_of_char,
+        test_parser_match_char,
         test_parser_match_str,
-        test_parser_class,
+        test_parser_match_str_class,
         test_parser_integer,
         test_parser_bind,
         TestCase::empty
