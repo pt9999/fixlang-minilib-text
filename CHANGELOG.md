@@ -1,3 +1,7 @@
+## 0.9.1
+### Fixed
+- Fixed an issue where `UnicodeTest::test_get_width` failed in the CI environment.
+
 ## 0.9.0
 ### Breaking Changes
 - Minilib.Text.SimpleParser: `Stream` now holds an array of characters instead of an iterator of characters.

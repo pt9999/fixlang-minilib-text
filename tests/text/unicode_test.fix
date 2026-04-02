@@ -1,6 +1,6 @@
 module UnicodeTest;
 
-
+import Minilib.Text.Locale;
 import Minilib.Text.StringEx;
 import Minilib.Text.Unicode;
 import Minilib.Testing.UnitTest;
@@ -516,5 +516,7 @@ main = (
         test_utf32_to_utf16,
         test_utf8_enc_dec,
     ]
+    // run all tests with LC_ALL=C.UTF-8
+    .map(map(with_locale(lc_all, locale_C_UTF8)))
     .run_test_driver
 );
