@@ -1,6 +1,6 @@
 # Minilib.Text.WParser
 
-Defined in minilib-text@0.9.0
+Defined in minilib-text@0.9.1
 
 Wide-character text parser. Customizable by monadic operations.
 - Stream of wide-characters

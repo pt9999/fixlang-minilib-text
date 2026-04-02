@@ -1,6 +1,6 @@
 # Minilib.Text.Unicode
 
-Defined in minilib-text@0.9.0
+Defined in minilib-text@0.9.1
 
 Unicode strings and conversions (UTF8/UTF16/UTF32)
 
@@ -61,17 +61,23 @@ Convert UTF8 string to UTF32 string. Please specify the output destination buffe
 
 Type: `[a : Minilib.Text.Unicode::ToUTF16String] a -> Minilib.Text.Unicode::UTF16String`
 
+Trait member of `Minilib.Text.Unicode::ToUTF16String`
+
 ### namespace Minilib.Text.Unicode::ToUTF32String
 
 #### to_utf32_string
 
 Type: `[a : Minilib.Text.Unicode::ToUTF32String] a -> Minilib.Text.Unicode::UTF32String`
 
+Trait member of `Minilib.Text.Unicode::ToUTF32String`
+
 ### namespace Minilib.Text.Unicode::ToUTF8String
 
 #### to_utf8_string
 
 Type: `[a : Minilib.Text.Unicode::ToUTF8String] a -> Minilib.Text.Unicode::UTF8String`
+
+Trait member of `Minilib.Text.Unicode::ToUTF8String`
 
 ### namespace Minilib.Text.Unicode::UTFString
 
