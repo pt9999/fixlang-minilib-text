@@ -1,3 +1,7 @@
+## 0.9.2
+### Changed
+- Utilized minilib-common@0.13.0.
+
 ## 0.9.1
 ### Fixed
 - Fixed an issue where `UnicodeTest::test_get_width` failed in the CI environment.
