@@ -1,6 +1,6 @@
 # Minilib.Text.SimpleParser
 
-Defined in minilib-text@0.9.1
+Defined in minilib-text@0.9.2
 
 Simple text parser. Customizable by monadic operations.
 - Stream of characters
@@ -301,10 +301,6 @@ Defined as: `type Parser a = unbox struct { ...fields... }`
 
 A structure with a function that receive a stream, parse it, and
 return the parsed value and the stream whose position is moved after the parsed string.
-
-##### field `_parser`
-
-Type: `Minilib.Text.SimpleParser::Stream::Stream -> Std::Result Std::ErrMsg (a, Minilib.Text.SimpleParser::Stream::Stream)`
 
 ### namespace Minilib.Text.SimpleParser::Stream
 
