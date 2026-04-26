@@ -1,3 +1,7 @@
+## 0.9.3
+### Fixed
+- Minilib.Text.Unicode: Changed `to_iter` and `split` to return iterators of opaque types.
+
 ## 0.9.2
 ### Changed
 - Utilized minilib-common@0.13.0.

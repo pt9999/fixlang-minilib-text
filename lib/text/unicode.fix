@@ -89,7 +89,7 @@ namespace UTFString {
     //
     // # Parameters
     // * `str` - A unicode string.
-    to_iter: UTFString a -> ArrayIterator a;
+    to_iter: [?i: Iterator, Item ?i = a] UTFString a -> ?i;
     to_iter = |str| str.to_array.to_iter;
 
     // Creates a unicode string from a single code unit.
@@ -233,7 +233,7 @@ namespace UTFString {
     //
     // * `sep` - A separator.
     // * `str` - A unicode string.
-    split: [a: Eq] UTFString a -> UTFString a -> ArrayIterator (UTFString a);
+    split: [a: Eq, ?i: Iterator, Item ?i = UTFString a] UTFString a -> UTFString a -> ?i;
     split = |sep, str| (
         if sep.get_size == 0 {
             str.to_array.map(UTFString::from_code_unit).to_iter
