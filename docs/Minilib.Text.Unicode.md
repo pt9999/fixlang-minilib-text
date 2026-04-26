@@ -1,6 +1,6 @@
 # Minilib.Text.Unicode
 
-Defined in minilib-text@0.9.2
+Defined in minilib-text@0.9.3
 
 Unicode strings and conversions (UTF8/UTF16/UTF32)
 
@@ -256,7 +256,7 @@ Sets the code unit of a unicode string at the specified index.
 
 #### split
 
-Type: `[a : Std::Eq] Minilib.Text.Unicode::UTFString a -> Minilib.Text.Unicode::UTFString a -> Std::Iterator::ArrayIterator (Minilib.Text.Unicode::UTFString a)`
+Type: `[?i : Std::Iterator, a : Std::Eq, Std::Iterator::Item ?i = Minilib.Text.Unicode::UTFString a] Minilib.Text.Unicode::UTFString a -> Minilib.Text.Unicode::UTFString a -> ?i`
 
 Splits a unicode string by the specified separator.
 
@@ -283,7 +283,7 @@ Converts a unicode string to an array of code units.
 
 #### to_iter
 
-Type: `Minilib.Text.Unicode::UTFString a -> Std::Iterator::ArrayIterator a`
+Type: `[?i : Std::Iterator, Std::Iterator::Item ?i = a] Minilib.Text.Unicode::UTFString a -> ?i`
 
 Converts a unicode string to an iterator of code units.
 
