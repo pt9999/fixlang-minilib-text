@@ -1,6 +1,8 @@
 ## 0.9.4
 ### Changed
 - Upgraded to minilib-common@0.13.2.
+- Modified some code to remove the deprecation warnings.
+- Minilib.Text.Unicode: `UTFString::get_size` is now deprecated. Use `@size` instead.
 
 ## 0.9.3
 ### Fixed

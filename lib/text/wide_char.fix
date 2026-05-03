@@ -23,40 +23,40 @@ type WideChar = U32;
 // this may need to be revisited in the future.
 
 is_alnum: WideChar -> Bool;
-is_alnum = |wc| FFI_CALL[CInt iswalnum(CUnsignedInt), wc.to_CUnsignedInt] > 0.to_CInt;
+is_alnum = |wc| FFI_CALL[CInt iswalnum(CUnsignedInt), wc.c_unsigned_int] > 0.c_int;
 
 is_alpha: WideChar -> Bool;
-is_alpha = |wc| FFI_CALL[CInt iswalpha(CUnsignedInt), wc.to_CUnsignedInt] > 0.to_CInt;
+is_alpha = |wc| FFI_CALL[CInt iswalpha(CUnsignedInt), wc.c_unsigned_int] > 0.c_int;
 
 is_blank: WideChar -> Bool;
-is_blank = |wc| FFI_CALL[CInt iswblank(CUnsignedInt), wc.to_CUnsignedInt] > 0.to_CInt;
+is_blank = |wc| FFI_CALL[CInt iswblank(CUnsignedInt), wc.c_unsigned_int] > 0.c_int;
 
 is_cntrl: WideChar -> Bool;
-is_cntrl = |wc| FFI_CALL[CInt iswcntrl(CUnsignedInt), wc.to_CUnsignedInt] > 0.to_CInt;
+is_cntrl = |wc| FFI_CALL[CInt iswcntrl(CUnsignedInt), wc.c_unsigned_int] > 0.c_int;
 
 is_digit: WideChar -> Bool;
-is_digit = |wc| FFI_CALL[CInt iswdigit(CUnsignedInt), wc.to_CUnsignedInt] > 0.to_CInt;
+is_digit = |wc| FFI_CALL[CInt iswdigit(CUnsignedInt), wc.c_unsigned_int] > 0.c_int;
 
 is_graph: WideChar -> Bool;
-is_graph = |wc| FFI_CALL[CInt iswgraph(CUnsignedInt), wc.to_CUnsignedInt] > 0.to_CInt;
+is_graph = |wc| FFI_CALL[CInt iswgraph(CUnsignedInt), wc.c_unsigned_int] > 0.c_int;
 
 is_lower: WideChar -> Bool;
-is_lower = |wc| FFI_CALL[CInt iswlower(CUnsignedInt), wc.to_CUnsignedInt] > 0.to_CInt;
+is_lower = |wc| FFI_CALL[CInt iswlower(CUnsignedInt), wc.c_unsigned_int] > 0.c_int;
 
 is_print: WideChar -> Bool;
-is_print = |wc| FFI_CALL[CInt iswprint(CUnsignedInt), wc.to_CUnsignedInt] > 0.to_CInt;
+is_print = |wc| FFI_CALL[CInt iswprint(CUnsignedInt), wc.c_unsigned_int] > 0.c_int;
 
 is_punct: WideChar -> Bool;
-is_punct = |wc| FFI_CALL[CInt iswpunct(CUnsignedInt), wc.to_CUnsignedInt] > 0.to_CInt;
+is_punct = |wc| FFI_CALL[CInt iswpunct(CUnsignedInt), wc.c_unsigned_int] > 0.c_int;
 
 is_space: WideChar -> Bool;
-is_space = |wc| FFI_CALL[CInt iswspace(CUnsignedInt), wc.to_CUnsignedInt] > 0.to_CInt;
+is_space = |wc| FFI_CALL[CInt iswspace(CUnsignedInt), wc.c_unsigned_int] > 0.c_int;
 
 is_upper: WideChar -> Bool;
-is_upper = |wc| FFI_CALL[CInt iswupper(CUnsignedInt), wc.to_CUnsignedInt] > 0.to_CInt;
+is_upper = |wc| FFI_CALL[CInt iswupper(CUnsignedInt), wc.c_unsigned_int] > 0.c_int;
 
 is_xdigit: WideChar -> Bool;
-is_xdigit = |wc| FFI_CALL[CInt iswxdigit(CUnsignedInt), wc.to_CUnsignedInt] > 0.to_CInt;
+is_xdigit = |wc| FFI_CALL[CInt iswxdigit(CUnsignedInt), wc.c_unsigned_int] > 0.c_int;
 
 // Returns the width of a wide character.
 // A wide character in half-width form counts as 1, a wide character in full-width form counts as 2.
@@ -64,7 +64,7 @@ is_xdigit = |wc| FFI_CALL[CInt iswxdigit(CUnsignedInt), wc.to_CUnsignedInt] > 0.
 //
 // For details, see Linux manual page for [wcwidth(3)](https://man7.org/linux/man-pages/man3/wcwidth.3.html).
 wcwidth: WideChar -> I64;
-wcwidth = |wc| FFI_CALL[CInt wcwidth(CUnsignedInt), wc.to_CUnsignedInt].to_I64;
+wcwidth = |wc| FFI_CALL[CInt wcwidth(CUnsignedInt), wc.c_unsigned_int].i64;
 
 // Returns the width of a wide string.
 // A wide character in half-width form counts as 1, a wide character in full-width form counts as 2.
@@ -73,8 +73,8 @@ wcwidth = |wc| FFI_CALL[CInt wcwidth(CUnsignedInt), wc.to_CUnsignedInt].to_I64;
 // For details, see Linux manual page for [wcswidth(3)](https://man7.org/linux/man-pages/man3/wcswidth.3.html).
 wcswidth: Array WideChar -> I64;
 wcswidth = |wcs| (
-    let size = wcs.get_size.to_CSizeT;
-    wcs.map(to_CUnsignedInt).borrow_boxed(|p_wcs|
+    let size = wcs.@size.c_size_t;
+    wcs.map(c_unsigned_int).borrow_boxed(|p_wcs|
         FFI_CALL[CInt wcswidth(Ptr, CSizeT), p_wcs, size]
-    ).to_I64
+    ).i64
 );

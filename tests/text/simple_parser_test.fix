@@ -14,7 +14,7 @@ crop_errmsg = |res| (
     res.mod_err(|e|
         match e.find_last_byte(':') {
             none() => e,
-            some(i) => e.get_sub(i + 2, e.get_size)
+            some(i) => e.get_sub(i + 2, e.@size)
         }
     )
 );
@@ -382,7 +382,7 @@ test_parser_match_str_ok = |(text, match_)| (
     make_test(testname) $ |_|
     let p = Parser::match_str(match_);
     let (_, next) = *(from_result $ p.run_parser_str(text));
-    assert_equal("column", next.@column, Stream::_first_column + match_.get_size);;
+    assert_equal("column", next.@column, Stream::_first_column + match_.@size);;
     pure()
 );
 

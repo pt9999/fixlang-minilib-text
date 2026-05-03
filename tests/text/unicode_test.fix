@@ -110,7 +110,7 @@ test_utf32_string_get_size = (
     make_test("test_utf_string_get_size") $ |_|
     let str = "aAあいう😊😀";
     let utf32: UTF32String = str.to_utf32_string;
-    assert_equal("size", 7, utf32.get_size)
+    assert_equal("size", 7, utf32.@size)
 );
 
 // test for `@`

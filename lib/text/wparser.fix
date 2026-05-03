@@ -45,10 +45,10 @@ namespace WStream {
     advance: WStream -> Option (WideChar, WStream);
     advance = |s| (
         let pos = s.@position;
-        if pos >= s.@array.get_size { none () };
+        if pos >= s.@array.@size { none () };
         let wc = s.@array.@(pos);
         // eval debug_eprintln("advance: wc="+wc.to_string + " pos=" + s.@position.to_string);
-        let s = if wc == '\n'.to_U32 {
+        let s = if wc == '\n'.u32 {
             s.set_line(s.@line + 1).set_column(_first_column)
         } else {
             s.set_column(s.@column + 1)
@@ -77,7 +77,7 @@ namespace WStream {
     read_wstring: I64 -> WStream -> UTF32String;
     read_wstring = |n, s| (
         let pos = s.@position;
-        let end = min(s.@array.get_size, pos + n);
+        let end = min(s.@array.@size, pos + n);
         let arr = s.@array.get_sub(pos, end);
         UTFString::from_array $ arr
     );
@@ -305,7 +305,7 @@ namespace WParser {
     // if the array length is zero.
     one_or_more: WParser a -> WParser (Array a);
     one_or_more = |p| (
-        repeat(p).filter(|array| array.get_size >= 1)
+        repeat(p).filter(|array| array.@size >= 1)
     );
 
     // `p.if_exists` returns `some(x)` if `p` returns `x` as a parse result,
@@ -379,7 +379,7 @@ namespace WParser {
     match_wstr: [str: ToUTF32String] str -> WParser ();
     match_wstr = |str| (
         let wstr = str.to_utf32_string;
-        if wstr.get_size == 1 { // Optimization
+        if wstr.@size == 1 { // Optimization
             match_wchar(wstr.@(0))
         };
         wstr.to_array.to_iter.fold(
@@ -426,7 +426,7 @@ namespace WParser {
     match_integer: WParser I64;
     match_integer = (
         match_wstr_class(WideChar::is_digit)
-        .filter(|wstr| wstr.get_size > 0)
+        .filter(|wstr| wstr.@size > 0)
         .map_result(|wstr| from_string(wstr.to_string))
     );
 }

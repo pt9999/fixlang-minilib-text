@@ -40,7 +40,7 @@ set_locale = |category_name, locale| (
                         + " errno=" + errno.to_string
                     )
                 };
-                pure $ _unsafe_from_c_str_ptr(ptr)
+                pure $ unsafe_from_c_str_ptr(ptr)
             }.to_result
         )
     ).from_io_result

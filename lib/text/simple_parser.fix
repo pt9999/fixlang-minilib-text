@@ -47,7 +47,7 @@ namespace Stream {
     advance: Stream -> Option (Char, Stream);
     advance = |s| (
         let pos = s.@position;
-        if pos >= s.@array.get_size { none () };
+        if pos >= s.@array.@size { none () };
         let c = s.@array.@(pos);
         // eval debug_eprintln("advance: c="+c.to_string + " pos=" + s.@position.to_string);
         let s = if c == '\n' {
@@ -79,7 +79,7 @@ namespace Stream {
     read_string: I64 -> Stream -> String;
     read_string = |n, s| (
         let pos = s.@position;
-        let end = min(s.@array.get_size, pos + n);
+        let end = min(s.@array.@size, pos + n);
         let arr = s.@array.get_sub(pos, end);
         StringEx::from_array $ arr
     );
@@ -312,7 +312,7 @@ namespace Parser {
     // if the array length is zero.
     one_or_more: Parser a -> Parser (Array a);
     one_or_more = |p| (
-        repeat(p).filter(|array| array.get_size >= 1)
+        repeat(p).filter(|array| array.@size >= 1)
     );
 
     // `p.if_exists` returns `some(x)` if `p` returns `x` as a parse result,
@@ -382,7 +382,7 @@ namespace Parser {
     // If the match fails, a `_NotMatch` error is raised.
     match_str: String -> Parser ();
     match_str = |str| (
-        if str.get_size == 1 { // Optimization
+        if str.@size == 1 { // Optimization
             match_char(str.get_first_byte.as_some)
         };
         str.to_iter.fold(
@@ -428,7 +428,7 @@ namespace Parser {
     match_integer: Parser I64;
     match_integer = (
         match_str_class(is_digit)
-        .filter(|str| str.get_size > 0)
+        .filter(|str| str.@size > 0)
         .map_result(|str| from_string(str))
     );
 }

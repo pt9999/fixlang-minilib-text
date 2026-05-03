@@ -12,7 +12,7 @@ make_wctype_test = |testname, is_type, true_chars, false_chars| (
     make_test(testname, |_|
         let test = |chars, expected| (
             let wchars = chars.to_utf32_string;
-            range(0, wchars.get_size).foreach_m(|i|
+            range(0, wchars.@size).foreach_m(|i|
                 let wc = wchars.@(i);
                 let s = wchars.get_sub(i, i+1).to_string;
                 let actual = is_type(wc);

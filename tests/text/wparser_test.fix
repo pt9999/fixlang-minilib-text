@@ -15,7 +15,7 @@ crop_errmsg = |res| (
     res.mod_err(|e|
         match e.find_last_byte(':') {
             none() => e,
-            some(i) => e.get_sub(i + 2, e.get_size)
+            some(i) => e.get_sub(i + 2, e.@size)
         }
     )
 );
@@ -425,7 +425,7 @@ test_wparser_match_wstr = (
             err(e) => assert_equal("err", expected, err(e)),
             ok(((), stream)) => (
                 assert_equal("ok", expected, ok());;
-                assert_equal("column", stream.@column, WStream::_first_column + str.to_utf32_string.get_size)
+                assert_equal("column", stream.@column, WStream::_first_column + str.to_utf32_string.@size)
             )
         }
     )
