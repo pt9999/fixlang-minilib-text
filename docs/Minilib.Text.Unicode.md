@@ -1,6 +1,6 @@
 # Minilib.Text.Unicode
 
-Defined in minilib-text@0.9.3
+Defined in minilib-text@0.9.4
 
 Unicode strings and conversions (UTF8/UTF16/UTF32)
 
@@ -16,7 +16,7 @@ Example:
 ```
 let str = "aAあいう😊😀";                       // an ordinary string (encoded in utf-8)
 let wstr: UTF32String = str.to_utf32_string;     // convert to a wide string
-assert_equal("size", 7, wstr.get_size);;         // number of wide characters
+assert_equal("size", 7, wstr.@size);;         // number of wide characters
 let wstr = wstr.get_sub(5, 7);                   // get substring of a wide string
 assert_equal("str", "😊😀", wstr.to_string);;   // convert back to an ordinary string
 ```
@@ -92,6 +92,16 @@ Gets the code unit of a unicode string at the specified index.
 * `i` - The index of the code unit.
 * `str` - The unicode string to be converted.
 
+#### @size
+
+Type: `Minilib.Text.Unicode::UTFString a -> Std::I64`
+
+Gets the length of a unicode string (= the count of code units).
+
+##### Parameters
+
+* `str` - The unicode string to be converted.
+
 #### concat
 
 Type: `Minilib.Text.Unicode::UTFString a -> Minilib.Text.Unicode::UTFString a -> Minilib.Text.Unicode::UTFString a`
@@ -118,7 +128,7 @@ Type: `[a : Std::Eq] Minilib.Text.Unicode::UTFString a -> Std::I64 -> Minilib.Te
 `str.find(token, start_idx)` finds the index where `token` firstly appears in `str` starting from `start_idx`.
 
 As a special behavior, if the `token` is empty, this function returns
-`some(start_idx)` if `start_idx <= str.get_size`, or returns `none()` otherwise.
+`some(start_idx)` if `start_idx <= str.@size`, or returns `none()` otherwise.
 
 ##### Parameters
 
@@ -166,13 +176,9 @@ NOTE: The iterator of code units NEED NOT to be null-terminated.
 
 #### get_size
 
+**Deprecated**: Use `@size` instead.
+
 Type: `Minilib.Text.Unicode::UTFString a -> Std::I64`
-
-Gets the length of a unicode string (= the count of code units).
-
-##### Parameters
-
-* `str` - The unicode string to be converted.
 
 #### get_sub
 
