@@ -74,7 +74,7 @@ wcwidth = |wc| FFI_CALL[CInt wcwidth(CUnsignedInt), wc.c_unsigned_int].i64;
 wcswidth: Array WideChar -> I64;
 wcswidth = |wcs| (
     let size = wcs.@size.c_size_t;
-    wcs.map(c_unsigned_int).borrow_boxed(|p_wcs|
+    wcs.map(c_unsigned_int).borrow_elements(|p_wcs|
         FFI_CALL[CInt wcswidth(Ptr, CSizeT), p_wcs, size]
     ).i64
 );
