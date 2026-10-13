@@ -80,7 +80,7 @@ test_wparser_run_wparser = (
     assert_equal("pos", 1, s1.@position);;
     let res = match_wchar("い".to_wide_char).run_wparser(s);
     assert_true("is_err", res.is_err);;
-    assert_equal("not_match", _NotMatch, res.as_err)
+    assert_equal("not_match", e_NotMatch, res.as_err)
 );
 
 test_wparser_run_wparser_str: TestCase;
@@ -93,7 +93,7 @@ test_wparser_run_wparser_str = (
     assert_equal("pos", 1, s1.@position);;
     let res = match_wchar("い".to_wide_char).run_wparser_str("あ");
     assert_true("is_err", res.is_err);;
-    assert_equal("not_match", _NotMatch, res.as_err)
+    assert_equal("not_match", e_NotMatch, res.as_err)
 );
 
 test_wparser_eval_wparser: TestCase;
@@ -104,7 +104,7 @@ test_wparser_eval_wparser = (
     let res = match_any_wchar.eval_wparser(s);
     assert_equal("ok", ok $ "あ".to_wide_char, res);;
     let res = match_wchar("い".to_wide_char).eval_wparser(s);
-    assert_equal("err", err $ _NotMatch, res)
+    assert_equal("err", err $ e_NotMatch, res)
 );
 
 test_wparser_eval_wparser_str: TestCase;
@@ -113,7 +113,7 @@ test_wparser_eval_wparser_str = (
     let res = match_any_wchar.eval_wparser_str("あ");
     assert_equal("ok", ok $ "あ".to_wide_char, res);;
     let res = match_wchar("い".to_wide_char).eval_wparser_str("あ");
-    assert_equal("err", err $ _NotMatch, res)
+    assert_equal("err", err $ e_NotMatch, res)
 );
 
 test_wparser_error: TestCase;
@@ -141,14 +141,14 @@ test_wparser_map_result: TestCase;
 test_wparser_map_result = (
     make_table_test("test_wparser_map_result",
         [
-            ("abc", "err", err $ _NotMatch),
+            ("abc", "err", err $ e_NotMatch),
             ("abc", "inc", ok $ "b"),
         ],
         |(text, op, expected)|
         let expected = expected.map(to_utf32_string);
         let p = match_any_wchar;
         let p = p.map_result(|a|
-            if op == "err" { err $ _NotMatch };
+            if op == "err" { err $ e_NotMatch };
             if op == "inc" { ok $ a + 1_U32 };
             undefined("invalid op: " + op)
         );
@@ -197,7 +197,7 @@ test_wparser_filter = (
     make_table_test("test_wparser_filter",
         [
             ("うえお", "あ", "お", ok $ "う"),
-            ("うえお", "か", "こ", err $ _NotMatch),
+            ("うえお", "か", "こ", err $ e_NotMatch),
             ("くけこ", "か", "こ", ok $ "く"),
         ],
         |(text, min_wc, max_wc, expected)|
@@ -221,7 +221,7 @@ test_wparser_or_else = (
     let text = "あいう";
     let run = |p| p.eval_wparser_str(text).map(UTFString::from_code_unit).crop_errmsg;
     let a = "あ".to_utf32_string;
-    assert_equal("pattern 11", err $ _NotMatch, run $ p1.or_else(p1));;
+    assert_equal("pattern 11", err $ e_NotMatch, run $ p1.or_else(p1));;
     assert_equal("pattern 12", err $ fatal, run $ p1.or_else(p2));;
     assert_equal("pattern 13", ok $ a, run $ p1.or_else(p3));;
     assert_equal("pattern 21", err $ fatal, run $ p2.or_else(p1));;
@@ -261,7 +261,7 @@ test_wparser_not_match: TestCase;
 test_wparser_not_match = (
     make_test("test_wparser_not_match") $ |_|
     let p: WParser WideChar = not_match;
-    assert_equal("eq", err $ _NotMatch, p.eval_wparser_str("あいう").crop_errmsg)
+    assert_equal("eq", err $ e_NotMatch, p.eval_wparser_str("あいう").crop_errmsg)
 );
 
 test_wparser_repeat: TestCase;
@@ -305,7 +305,7 @@ test_wparser_one_or_more: TestCase;
 test_wparser_one_or_more = (
     make_table_test("test_wparser_one_or_more",
         [
-            ("", err $ _NotMatch),
+            ("", err $ e_NotMatch),
             ("a", ok $ "a"),
             ("abcde", ok $ "abcde"),
         ],
@@ -351,7 +351,7 @@ test_wparser_match_any_wchar: TestCase;
 test_wparser_match_any_wchar = (
     make_table_test("test_wparser_match_any_wchar",
         [
-            ("", err $ _NotMatch),
+            ("", err $ e_NotMatch),
             ("abc", ok $ "a"),
             ("あいう", ok $ "あ"),
             ("😊😀", ok $ "😊"),
@@ -368,14 +368,14 @@ test_wparser_match_wchar: TestCase;
 test_wparser_match_wchar = (
     make_table_test("test_wparser_match_wchar",
         [
-            ("", "a", err $ _NotMatch),
-            ("", "あ", err $ _NotMatch),
+            ("", "a", err $ e_NotMatch),
+            ("", "あ", err $ e_NotMatch),
             ("abc", "a", ok()),
-            ("abc", "あ", err $ _NotMatch),
-            ("あいう", "a", err $ _NotMatch),
+            ("abc", "あ", err $ e_NotMatch),
+            ("あいう", "a", err $ e_NotMatch),
             ("あいう", "あ", ok()),
-            ("😊😀", "a", err $ _NotMatch),
-            ("😊😀", "あ", err $ _NotMatch),
+            ("😊😀", "a", err $ e_NotMatch),
+            ("😊😀", "あ", err $ e_NotMatch),
             ("😊😀", "😊", ok()),
         ],
         |(text, wchar, expected)|
@@ -390,13 +390,13 @@ test_wparser_match_one_of_wchar: TestCase;
 test_wparser_match_one_of_wchar = (
     make_table_test("test_wparser_match_one_of_wchar",
         [
-            ("", "", err $ _NotMatch),
-            ("", "aあ😊", err $ _NotMatch),
-            ("a", "", err $ _NotMatch),
+            ("", "", err $ e_NotMatch),
+            ("", "aあ😊", err $ e_NotMatch),
+            ("a", "", err $ e_NotMatch),
             ("a", "a", ok $ "a"),
             ("a", "aあ😊", ok $ "a"),
             ("abcあ😊", "aあ😊", ok $ "a"),
-            ("bcあ😊", "aあ😊", err $ _NotMatch),
+            ("bcあ😊", "aあ😊", err $ e_NotMatch),
             ("あいう", "aあ😊", ok $ "あ"),
             ("😊😀aあ", "aあ😊", ok $ "😊"),
         ],
@@ -415,8 +415,8 @@ test_wparser_match_wstr = (
             ("null123", "null", ok()),
             ("false123", "false", ok()),
             ("あいうえお123", "あいう", ok()),
-            ("nulxl123", "null", err $ _NotMatch),
-            ("あいえお123", "あいう", err $ _NotMatch),
+            ("nulxl123", "null", err $ e_NotMatch),
+            ("あいえお123", "あいう", err $ e_NotMatch),
         ],
         |(text, str, expected)|
         let p = WParser::match_wstr(str);
@@ -464,14 +464,14 @@ test_wparser_integer: TestCase;
 test_wparser_integer = (
     make_table_test("test_wparser_integer",
         [
-            ("", err $ _NotMatch),
+            ("", err $ e_NotMatch),
             ("0", ok $ 0),
             ("1", ok $ 1),
-            ("-1", err $ _NotMatch),    // currently negative integers are not supported
-            ("１", err $ _NotMatch),
+            ("-1", err $ e_NotMatch),    // currently negative integers are not supported
+            ("１", err $ e_NotMatch),
             ("01234abc", ok $ 1234),
             ("012３４ａｂｃ", ok $ 12),
-            ("abc01234", err $ _NotMatch),
+            ("abc01234", err $ e_NotMatch),
         ],
         |(text, expected)|
         let p = WParser::match_integer;

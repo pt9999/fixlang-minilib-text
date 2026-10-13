@@ -120,8 +120,8 @@ impl WStream: ToString {
 }
 
 // A special error message that represents the wparser is not matched.
-_NotMatch: ErrMsg;
-_NotMatch = "NotMatch";
+e_NotMatch: ErrMsg;
+e_NotMatch = "NotMatch";
 
 // A type of wide-character stream parser.
 //
@@ -215,17 +215,17 @@ namespace WParser {
     get_stream = wparser $ |s| ok $ (s, s);
 
     // Checks whether the parsed result of the specified WParser satisfies the specified conditions.
-    // Raises a `_NotMatch` error if the specified condition is not met.
+    // Raises a `e_NotMatch` error if the specified condition is not met.
     filter: (a -> Bool) -> WParser a -> WParser a;
     filter = |f, p| wparser $ |s| (
         let (a, next) = *(p.run_wparser(s));
         if !f(a) {
-            err $ _NotMatch
+            err $ e_NotMatch
         };
         pure $ (a, next)
     );
 
-    // If the first WParser raises a `_NotMatch` error, tries the second WParser.
+    // If the first WParser raises a `e_NotMatch` error, tries the second WParser.
     // Note that `pa1.or_else(pa2)` is interpreted as `or_else(pa2, pa1)`,
     // and  that `pa1.or_else $ pa2` is interpreted as `or_else(pa1, pa2)`.
     or_else: WParser a -> WParser a -> WParser a;
@@ -234,7 +234,7 @@ namespace WParser {
         if res.is_ok {
             pure $ res.as_ok
         };
-        if res.as_err != _NotMatch {
+        if res.as_err != e_NotMatch {
             err $ res.as_err
         };
         pa2.run_wparser(s)
@@ -245,7 +245,7 @@ namespace WParser {
     or_elseF: WParser a -> WParser a -> WParser a;
     or_elseF = |pa1, pa2| pa1.or_else(pa2);
 
-    // If the WParser reports any error (including `_NotMatch`),
+    // If the WParser reports any error (including `e_NotMatch`),
     // raises the specified string as an error.
     or_error: ErrMsg -> WParser a -> WParser a;
     or_error = |msg, p| wparser $ |s| (
@@ -264,16 +264,16 @@ namespace WParser {
         s.error(msg)
     );
 
-    // Raises a `_NotMatch` error.
+    // Raises a `e_NotMatch` error.
     not_match: WParser a;
     not_match = wparser $ |s| (
-        err $ _NotMatch
+        err $ e_NotMatch
     );
 
     // Repeats matches as many as possible. The parse result is
     // an array of successful matches.
-    // If a _NotMatch error is raised, returns as success.
-    // If an error other than _NotMatch is raised, reports that error.
+    // If a e_NotMatch error is raised, returns as success.
+    // If an error other than e_NotMatch is raised, reports that error.
     repeat: WParser a -> WParser (Array a);
     repeat = |p| wparser $ |s| (
         let array = Array::empty(100);
@@ -282,7 +282,7 @@ namespace WParser {
             let old_position = s.@position;
             let res = p.run_wparser(s);
             if res.is_err {
-                if res.as_err != _NotMatch {
+                if res.as_err != e_NotMatch {
                     break $ err $ res.as_err
                 };
                 break $ pure $ (array, s)
@@ -301,7 +301,7 @@ namespace WParser {
     zero_or_more: WParser a -> WParser (Array a);
     zero_or_more = repeat;
 
-    // Same as `zero_or_more`, but raises a _NotMatch error
+    // Same as `zero_or_more`, but raises a e_NotMatch error
     // if the array length is zero.
     one_or_more: WParser a -> WParser (Array a);
     one_or_more = |p| (
@@ -326,23 +326,23 @@ namespace WParser {
 
     // Matches any single wide-character. The parsed result is
     // a single matched wide-character.
-    // If the match fails (eg. the end of stream), a `_NotMatch` error is raised.
+    // If the match fails (eg. the end of stream), a `e_NotMatch` error is raised.
     match_any_wchar: WParser WideChar;
     match_any_wchar = wparser $ |s| (
         s.advance.map_or(
-            err $ _NotMatch,
+            err $ e_NotMatch,
             |(wc, next)| pure $ (wc, next)
         )
     );
 
     // Matches a single wide-character specified by the argument.
     // The parsed result is nothing.
-    // If the match fails, a `_NotMatch` error is raised.
+    // If the match fails, a `e_NotMatch` error is raised.
     match_wchar: WideChar -> WParser ();
     match_wchar = |wchr| wparser $ |s| (
         s.advance.map_or(
-            err $ _NotMatch,
-            |(wc, next)| if wc != wchr { err $ _NotMatch } else { pure $ ((), next) }
+            err $ e_NotMatch,
+            |(wc, next)| if wc != wchr { err $ e_NotMatch } else { pure $ ((), next) }
         )
     );
 
@@ -360,7 +360,7 @@ namespace WParser {
 
     // Matches a wide-character which is included in the specified string.
     // The parsed result is a string consisting of the single matched wide-character.
-    // If the match fails, a `_NotMatch` error is raised.
+    // If the match fails, a `e_NotMatch` error is raised.
     match_one_of_wchar: [str: ToUTF32String] str -> WParser UTF32String;
     match_one_of_wchar = |str| do {
         let wstr = str.to_utf32_string;
@@ -375,7 +375,7 @@ namespace WParser {
 
     // Matches a string specified by the argument.
     // The parsed result is nothing.
-    // If the match fails, a `_NotMatch` error is raised.
+    // If the match fails, a `e_NotMatch` error is raised.
     match_wstr: [str: ToUTF32String] str -> WParser ();
     match_wstr = |str| (
         let wstr = str.to_utf32_string;

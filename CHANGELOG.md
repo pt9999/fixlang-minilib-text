@@ -1,6 +1,7 @@
 ## 0.11.0
 ### Changed
 - fixproj.toml: Bumped `fix_version` to 1.6.0. Depends on minilib-common@0.15.0.
+- Minilib.Text.SimpleParser, Minilib.Text.WParser: Changed `_NotMatch` to `e_NotMatch`.
 
 ## 0.10.1
 ### Changed

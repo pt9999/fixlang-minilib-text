@@ -78,7 +78,7 @@ test_parser_run_parser = (
     assert_equal("pos", 1, s1.@position);;
     let res = match_char('b').run_parser(s);
     assert_true("is_err", res.is_err);;
-    assert_equal("not_match", _NotMatch, res.as_err)
+    assert_equal("not_match", e_NotMatch, res.as_err)
 );
 
 test_parser_run_parser_str: TestCase;
@@ -91,7 +91,7 @@ test_parser_run_parser_str = (
     assert_equal("pos", 1, s1.@position);;
     let res = match_char('b').run_parser_str("a");
     assert_true("is_err", res.is_err);;
-    assert_equal("not_match", _NotMatch, res.as_err)
+    assert_equal("not_match", e_NotMatch, res.as_err)
 );
 
 test_parser_eval_parser: TestCase;
@@ -102,7 +102,7 @@ test_parser_eval_parser = (
     let res = match_any_char.eval_parser(s);
     assert_equal("ok", ok $ 'a', res);;
     let res = match_char('b').eval_parser(s);
-    assert_equal("err", err $ _NotMatch, res)
+    assert_equal("err", err $ e_NotMatch, res)
 );
 
 test_parser_eval_parser_str: TestCase;
@@ -111,7 +111,7 @@ test_parser_eval_parser_str = (
     let res = match_any_char.eval_parser_str("a");
     assert_equal("ok", ok $ 'a', res);;
     let res = match_char('b').eval_parser_str("a");
-    assert_equal("err", err $ _NotMatch, res)
+    assert_equal("err", err $ e_NotMatch, res)
 );
 
 test_parser_error: TestCase;
@@ -139,13 +139,13 @@ test_parser_map_result: TestCase;
 test_parser_map_result = (
     make_table_test("test_parser_map_result",
         [
-            ("abc", "err", err $ _NotMatch),
+            ("abc", "err", err $ e_NotMatch),
             ("abc", "inc", ok $ 'b'),
         ],
         |(text, op, expected)|
         let p = match_any_char;
         let p = p.map_result(|a|
-            if op == "err" { err $ _NotMatch };
+            if op == "err" { err $ e_NotMatch };
             if op == "inc" { ok $ a + 1_U8 };
             undefined("invalid op: " + op)
         );
@@ -193,7 +193,7 @@ test_parser_filter = (
     make_table_test("test_parser_filter",
         [
             ("cde", 'a', 'e', ok $ 'c'),
-            ("cde", 'f', 'j', err $ _NotMatch),
+            ("cde", 'f', 'j', err $ e_NotMatch),
             ("hij", 'f', 'j', ok $ 'h'),
         ],
         |(text, min_c, max_c, expected)|
@@ -213,7 +213,7 @@ test_parser_or_else = (
     let text = "abc";
     let run = |p| p.eval_parser_str(text).crop_errmsg;
     let a = 'a';
-    assert_equal("pattern 11", err $ _NotMatch, run $ p1.or_else(p1));;
+    assert_equal("pattern 11", err $ e_NotMatch, run $ p1.or_else(p1));;
     assert_equal("pattern 12", err $ fatal, run $ p1.or_else(p2));;
     assert_equal("pattern 13", ok $ a, run $ p1.or_else(p3));;
     assert_equal("pattern 21", err $ fatal, run $ p2.or_else(p1));;
@@ -252,7 +252,7 @@ test_parser_not_match: TestCase;
 test_parser_not_match = (
     make_test("test_parser_not_match") $ |_|
     let p: Parser Char = not_match;
-    assert_equal("eq", err $ _NotMatch, p.eval_parser_str("abc").crop_errmsg)
+    assert_equal("eq", err $ e_NotMatch, p.eval_parser_str("abc").crop_errmsg)
 );
 
 test_parser_repeat: TestCase;
@@ -289,7 +289,7 @@ test_parser_one_or_more: TestCase;
 test_parser_one_or_more = (
     make_table_test("test_parser_one_or_more",
         [
-            ("", err $ _NotMatch),
+            ("", err $ e_NotMatch),
             ("a", ok $ "a"),
             ("abcde", ok $ "abcde"),
         ],
@@ -333,7 +333,7 @@ test_parser_match_any_char: TestCase;
 test_parser_match_any_char = (
     make_table_test("test_parser_match_any_char",
         [
-            ("", err $ _NotMatch),
+            ("", err $ e_NotMatch),
             ("a", ok $ 'a'),
             ("\\", ok $ '\\'),
         ],
@@ -348,9 +348,9 @@ test_parser_match_char: TestCase;
 test_parser_match_char = (
     make_table_test("test_parser_match_char",
         [
-            ("", 'a', err $ _NotMatch),
+            ("", 'a', err $ e_NotMatch),
             ("abc", 'a', ok()),
-            ("abc", 'b', err $ _NotMatch),
+            ("abc", 'b', err $ e_NotMatch),
         ],
         |(text, char, expected)|
         let p = match_char(char);
@@ -363,11 +363,11 @@ test_parser_match_one_of_char: TestCase;
 test_parser_match_one_of_char = (
     make_table_test("test_parser_match_one_of_char",
         [
-            ("", "", err $ _NotMatch),
-            ("", "abc", err $ _NotMatch),
-            ("b", "", err $ _NotMatch),
+            ("", "", err $ e_NotMatch),
+            ("", "abc", err $ e_NotMatch),
+            ("b", "", err $ e_NotMatch),
             ("b", "abc", ok $ "b"),
-            ("z", "abc", err $ _NotMatch),
+            ("z", "abc", err $ e_NotMatch),
         ],
         |(text, chars, expected)|
         let p = match_one_of_char(chars);
@@ -449,7 +449,7 @@ test_parser_integer: TestCase;
 test_parser_integer = (
     [
         test_parser_integer_ok $ ("01234abc", 1234),
-        test_parser_integer_err $ ("abc01234", _NotMatch)
+        test_parser_integer_err $ ("abc01234", e_NotMatch)
     ].run_tests
 );
 
