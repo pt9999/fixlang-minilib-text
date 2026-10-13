@@ -1,6 +1,6 @@
 # Minilib.Text.WParser
 
-Defined in minilib-text@0.10.1
+Defined in minilib-text@0.11.0
 
 Wide-character text parser. Customizable by monadic operations.
 - Stream of wide-characters
@@ -8,6 +8,14 @@ Wide-character text parser. Customizable by monadic operations.
 - Create complex parsers with composition
 
 ## Values
+
+### namespace Minilib.Text.WParser
+
+#### e_NotMatch
+
+Type: `Std::ErrMsg`
+
+A special error message that represents the wparser is not matched.
 
 ### namespace Minilib.Text.WParser::WParser
 
@@ -43,7 +51,7 @@ and return the parsed value.
 Type: `(a -> Std::Bool) -> Minilib.Text.WParser::WParser a -> Minilib.Text.WParser::WParser a`
 
 Checks whether the parsed result of the specified WParser satisfies the specified conditions.
-Raises a `_NotMatch` error if the specified condition is not met.
+Raises a `e_NotMatch` error if the specified condition is not met.
 
 #### get_stream
 
@@ -71,7 +79,7 @@ Type: `Minilib.Text.WParser::WParser Minilib.Text.WideChar::WideChar`
 
 Matches any single wide-character. The parsed result is
 a single matched wide-character.
-If the match fails (eg. the end of stream), a `_NotMatch` error is raised.
+If the match fails (eg. the end of stream), a `e_NotMatch` error is raised.
 
 #### match_end_of_stream
 
@@ -91,7 +99,7 @@ Type: `[str : Minilib.Text.Unicode::ToUTF32String] str -> Minilib.Text.WParser::
 
 Matches a wide-character which is included in the specified string.
 The parsed result is a string consisting of the single matched wide-character.
-If the match fails, a `_NotMatch` error is raised.
+If the match fails, a `e_NotMatch` error is raised.
 
 #### match_wchar
 
@@ -99,7 +107,7 @@ Type: `Minilib.Text.WideChar::WideChar -> Minilib.Text.WParser::WParser ()`
 
 Matches a single wide-character specified by the argument.
 The parsed result is nothing.
-If the match fails, a `_NotMatch` error is raised.
+If the match fails, a `e_NotMatch` error is raised.
 
 #### match_wchar_class
 
@@ -113,7 +121,7 @@ Type: `[str : Minilib.Text.Unicode::ToUTF32String] str -> Minilib.Text.WParser::
 
 Matches a string specified by the argument.
 The parsed result is nothing.
-If the match fails, a `_NotMatch` error is raised.
+If the match fails, a `e_NotMatch` error is raised.
 
 #### match_wstr_class
 
@@ -125,20 +133,20 @@ Matches a zero-or-more-length string. Each wide-character should satisfy the spe
 
 Type: `Minilib.Text.WParser::WParser a`
 
-Raises a `_NotMatch` error.
+Raises a `e_NotMatch` error.
 
 #### one_or_more
 
 Type: `Minilib.Text.WParser::WParser a -> Minilib.Text.WParser::WParser (Std::Array a)`
 
-Same as `zero_or_more`, but raises a _NotMatch error
+Same as `zero_or_more`, but raises a e_NotMatch error
 if the array length is zero.
 
 #### or_else
 
 Type: `Minilib.Text.WParser::WParser a -> Minilib.Text.WParser::WParser a -> Minilib.Text.WParser::WParser a`
 
-If the first WParser raises a `_NotMatch` error, tries the second WParser.
+If the first WParser raises a `e_NotMatch` error, tries the second WParser.
 Note that `pa1.or_else(pa2)` is interpreted as `or_else(pa2, pa1)`,
 and  that `pa1.or_else $ pa2` is interpreted as `or_else(pa1, pa2)`.
 
@@ -153,7 +161,7 @@ Flipped version of `or_else`.
 
 Type: `Std::ErrMsg -> Minilib.Text.WParser::WParser a -> Minilib.Text.WParser::WParser a`
 
-If the WParser reports any error (including `_NotMatch`),
+If the WParser reports any error (including `e_NotMatch`),
 raises the specified string as an error.
 
 #### repeat
@@ -162,8 +170,8 @@ Type: `Minilib.Text.WParser::WParser a -> Minilib.Text.WParser::WParser (Std::Ar
 
 Repeats matches as many as possible. The parse result is
 an array of successful matches.
-If a _NotMatch error is raised, returns as success.
-If an error other than _NotMatch is raised, reports that error.
+If a e_NotMatch error is raised, returns as success.
+If an error other than e_NotMatch is raised, reports that error.
 
 #### run_wparser
 

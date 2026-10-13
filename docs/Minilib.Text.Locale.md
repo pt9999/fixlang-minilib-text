@@ -1,6 +1,6 @@
 # Minilib.Text.Locale
 
-Defined in minilib-text@0.10.1
+Defined in minilib-text@0.11.0
 
 Locale management functions.
 
