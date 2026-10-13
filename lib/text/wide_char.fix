@@ -12,7 +12,10 @@
 // you may need to call `Locale::init_locale` or `Locale::set_locale` first.
 module Minilib.Text.WideChar;
 
-import Minilib.Text.Unicode;
+import Std::{
+    Array, Bool, I64, U32, Array::{@size, borrow_elements}, Functor::map, ToCInt::c_int, 
+    ToCSizeT::c_size_t, ToCUnsignedInt::c_unsigned_int, ToI64::i64
+};
 
 // The type of wide character.
 //

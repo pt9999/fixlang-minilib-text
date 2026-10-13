@@ -18,8 +18,16 @@
 // ```
 module Minilib.Text.Unicode;
 
-import Minilib.Text.WideChar;
-import Minilib.Text.StringEx;
+import Minilib.Text.StringEx::to_array;
+import Minilib.Text.WideChar::{wcswidth, WideChar};
+import Std::{
+    loop, Add, Array, Bool, Eq, FromString, I64, Iterator, LessThan, LessThanOrEq, Option, String, 
+    ToString, U16, U32, U8, Zero, Array::{@, @size, append, get_sub, pop_back, push_back, set, to_iter}, 
+    FromBytes::from_bytes, Functor::map, Iterator::{to_array, Item}, LoopState::{break, continue}, 
+    Option::{none, some}, Result::{as_ok, ok}, ToString::to_string, ToU16::u16, ToU32::u32, ToU8::u8, 
+    U16::{bit_and, bit_or, shift_left, shift_right}, U32::{bit_and, bit_or, shift_left, shift_right}, 
+    U8::{bit_and, bit_or}
+};
 
 // Unicode string type.
 //

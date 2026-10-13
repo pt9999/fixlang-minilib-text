@@ -4,10 +4,17 @@
 // - Create complex parsers with composition
 module Minilib.Text.SimpleParser;
 
-import Character;
-
-import Minilib.Monad.Error;
-import Minilib.Text.StringEx;
+import Character::{is_digit, is_lower, is_space};
+import Minilib.Monad.Error::MonadErrorIF;
+import Minilib.Text.StringEx::{find_byte, from_array, to_array, to_iter};
+import Std::{
+    loop, Array, Bool, ErrMsg, FromString, Functor, I64, Monad, Option, Result, String, ToString, U8, 
+    Array::{@, @size, empty, get_sub, push_back}, Debug::debug_println, FromString::from_string, 
+    Functor::map, Iterator::fold, LessThan::min, LoopState::{break, continue}, Monad::pure, 
+    Option::{as_some, is_none, is_some, map_or, none, some}, 
+    Result::{as_err, as_ok, err, is_err, is_ok, ok}, String::{@size, get_first_byte, get_sub}, 
+    ToString::to_string, Tuple2::@0
+};
 
 // The type of characters. Currently only UTF-8 string is supported.
 type Char = U8;

@@ -1,12 +1,33 @@
 module WParserTest;
 
-import Minilib.Monad.Error;
-import Minilib.Text.StringEx;
-import Minilib.Text.Locale;
-import Minilib.Text.Unicode;
-import Minilib.Text.WideChar;
-import Minilib.Text.WParser;
-import Minilib.Testing.UnitTest;
+import Minilib.Monad.Error::MonadErrorIF::{catch, error};
+import Minilib.Testing.UnitTest::{assert_equal, assert_true, make_table_test, make_test, run_test_driver, TestCase, TestCase::empty};
+import Minilib.Text.Locale::{lc_all, locale_C_UTF8, with_locale};
+import Minilib.Text.StringEx::find_last_byte;
+import Minilib.Text.Unicode::{
+    UTF32String, ToUTF32String::to_utf32_string, 
+    UTFString::{@, @size, from_array, from_code_unit, make, to_wide_char}
+};
+import Minilib.Text.WParser::{
+    e_NotMatch, WParser, 
+    WParser::{
+        error_parser, eval_wparser, eval_wparser_str, filter, get_stream, if_exists, map_result, 
+        match_any_wchar, match_end_of_stream, match_integer, match_one_of_wchar, match_wchar, 
+        match_wchar_class, match_wstr, match_wstr_class, not_match, one_or_more, or_else, or_error, repeat, 
+        run_wparser, run_wparser_str, unit, zero_or_more
+    }, 
+    WStream::{
+        _first_column, _first_line, _first_position, error, make, read_all, read_wstring_between, WStream, 
+        WStream::{@column, @filename, @line, @position, set_column, set_filename, set_line, set_position}
+    }
+};
+import Minilib.Text.WideChar::{is_alpha, is_digit, is_lower, is_space, WideChar};
+import Std::{
+    undefined, ErrMsg, IO, Result, String, FromString::from_string, Functor::map, 
+    IO::IOFail::from_result, Monad::pure, Option::{none, some}, 
+    Result::{as_err, as_ok, err, is_err, is_ok, mod_err, ok}, String::{@size, get_sub}, 
+    ToString::to_string
+};
 
 // Crops the error message.
 // eg. `err("line 1, column 1: fatal_error")` => `err("fatal_error")`

@@ -1,11 +1,31 @@
 module SimpleParserTest;
 
-import Character;
-
-import Minilib.Monad.Error;
-import Minilib.Text.StringEx;
-import Minilib.Text.SimpleParser;
-import Minilib.Testing.UnitTest;
+import Character::{is_alpha, is_space};
+import Minilib.Monad.Error::MonadErrorIF::{catch, error};
+import Minilib.Testing.UnitTest::{
+    assert_equal, assert_true, make_table_test, make_test, run_test_driver, run_tests, TestCase, 
+    TestCase::empty
+};
+import Minilib.Text.SimpleParser::{
+    e_NotMatch, Char, Parser, 
+    Parser::{
+        error_parser, eval_parser, eval_parser_str, filter, get_stream, if_exists, map_result, 
+        match_any_char, match_char, match_end_of_stream, match_integer, match_one_of_char, match_str, 
+        match_str_class, match_str_class_digit, match_str_class_lower, not_match, one_or_more, or_else, 
+        or_error, repeat, run_parser, run_parser_str, unit, zero_or_more
+    }, 
+    Stream::{
+        _first_column, _first_line, _first_position, error, make, read_all, read_string_between, Stream, 
+        Stream::{@column, @filename, @line, @position, set_column, set_filename, set_line, set_position}
+    }
+};
+import Minilib.Text.StringEx::{find_last_byte, from_array};
+import Std::{
+    undefined, ErrMsg, I64, IO, Result, String, Array::push_back, FromString::from_string, Functor::map, 
+    IO::IOFail::from_result, Monad::pure, Option::{none, some}, 
+    Result::{as_err, as_ok, err, is_err, is_ok, mod_err, ok}, 
+    String::{@size, _unsafe_from_c_str, from_U8, get_sub}, ToString::to_string
+};
 
 // Crops the error message.
 // eg. `err("line 1, column 1: fatal_error")` => `err("fatal_error")`

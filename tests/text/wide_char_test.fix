@@ -1,11 +1,14 @@
 module WideCharTest;
 
-import Minilib.Text.Locale;
-import Minilib.Text.WideChar;
-import Minilib.Text.Unicode;
-import Minilib.Text.StringEx;
-import Minilib.Testing.UnitTest;
-import Minilib.Trait.Traversable;
+import Minilib.Testing.UnitTest::{assert_equal, make_table_test, make_test, run_test_driver, TestCase};
+import Minilib.Text.Locale::{lc_all, locale_C_UTF8, with_locale};
+import Minilib.Text.Unicode::{ToUTF32String::to_utf32_string, UTFString::{@, @data, @size, get_sub}};
+import Minilib.Text.WideChar::{
+    is_alnum, is_alpha, is_blank, is_cntrl, is_digit, is_graph, is_lower, is_print, is_punct, is_space, 
+    is_upper, is_xdigit, wcswidth, wcwidth, WideChar
+};
+import Minilib.Trait.Traversable::foreach_m;
+import Std::{Bool, IO, String, Functor::map, Iterator::range, ToString::to_string};
 
 make_wctype_test: String -> (WideChar -> Bool) -> String -> String -> TestCase;
 make_wctype_test = |testname, is_type, true_chars, false_chars| (

@@ -4,10 +4,19 @@
 // - Create complex parsers with composition
 module Minilib.Text.WParser;
 
-import Minilib.Monad.Error;
-import Minilib.Text.Unicode;
-import Minilib.Text.WideChar;
-import Minilib.Text.StringEx;
+import Minilib.Monad.Error::MonadErrorIF;
+import Minilib.Text.Unicode::{
+    ToUTF32String, UTF32String, ToUTF32String::to_utf32_string, 
+    UTFString::{@, @size, from_array, get_sub, to_array}
+};
+import Minilib.Text.WideChar::{is_digit, WideChar};
+import Std::{
+    loop, Array, Bool, ErrMsg, FromString, Functor, I64, Monad, Option, Path, Result, ToString, 
+    Array::{@, @size, empty, find_by, get_sub, push_back, to_iter}, Debug::debug_println, Eq::eq, 
+    FromString::from_string, Functor::map, Iterator::fold, LessThan::min, LoopState::{break, continue}, 
+    Monad::pure, Option::{as_some, is_none, is_some, map_or, none, some}, 
+    Result::{as_err, as_ok, err, is_err, is_ok, ok}, ToString::to_string, ToU32::u32, Tuple2::@0
+};
 
 namespace WStream {
     // A wide-character iterator that stores the file name, line number, column number,

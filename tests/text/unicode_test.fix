@@ -1,9 +1,20 @@
 module UnicodeTest;
 
-import Minilib.Text.Locale;
-import Minilib.Text.StringEx;
-import Minilib.Text.Unicode;
-import Minilib.Testing.UnitTest;
+import Minilib.Testing.UnitTest::{assert_equal, make_table_test, make_test, run_test_driver, run_tests, TestCase, TestCase::empty};
+import Minilib.Text.Locale::{lc_all, locale_C_UTF8, with_locale};
+import Minilib.Text.StringEx::{from_array, to_array};
+import Minilib.Text.Unicode::{
+    utf16_to_utf32, utf32_to_utf16, utf32_to_utf8, utf8_to_utf32, UTF16String, UTF32String, UTF8String, 
+    ToUTF16String::to_utf16_string, ToUTF32String::to_utf32_string, ToUTF8String::to_utf8_string, 
+    UTFString::{
+        @, @size, concat, empty, find, from_array, from_code_unit, from_iter, get_sub, get_width, is_empty, 
+        make, pop_back, push_back, set, split, to_array, to_iter, to_wide_char
+    }
+};
+import Std::{
+    Array, IO, String, U16, U32, U8, Array::{empty, to_iter}, Functor::map, Iterator::{filter, to_array}, 
+    Monad::pure, Option::{none, some}, ToString::to_string, Zero::zero
+};
 
 // test for `to_string`, `to_utf8_string`, `to_utf16_string`, `to_utf32_string`
 test_to_utf8_utf16_utf32_string: TestCase;

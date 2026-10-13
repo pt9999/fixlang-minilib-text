@@ -1,7 +1,11 @@
 module LocaleTest;
 
-import Minilib.Text.Locale;
-import Minilib.Testing.UnitTest;
+import Minilib.Testing.UnitTest::{assert_equal, assert_true, make_test, run_test_driver, TestCase};
+import Minilib.Text.Locale::{
+    get_locale, init_locale, lc_all, lc_time, locale_C, locale_C_UTF8, locale_default, set_locale, 
+    with_locale
+};
+import Std::{IO, IO::IOFail::{lift, to_result}, Monad::pure, Result::is_err};
 
 test_init_locale: TestCase;
 test_init_locale = (

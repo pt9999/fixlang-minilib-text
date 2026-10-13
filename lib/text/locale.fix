@@ -5,7 +5,12 @@
 // For details, see the documentation of [Minilib.Text.WideChar](Minilib.Text.WideChar.md) module.
 module Minilib.Text.Locale;
 
-import Minilib.Monad.Error;
+import Minilib.Monad.Error::finally;
+import Std::{
+    IO, String, FFI::{clear_errno, get_errno}, Functor::{forget, map}, 
+    IO::{IOFail, IOFail::{from_io_result, lift, throw, to_result, try}}, Monad::pure, 
+    String::{borrow_c_str_io, unsafe_from_c_str_ptr, unsafe_from_c_str_ptr_io}, ToString::to_string
+};
 
 // Initialize the program's current locale.
 //

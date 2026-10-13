@@ -1,12 +1,12 @@
 module Test;
 
-import Minilib.Testing.UnitTest;
-
-import LocaleTest;
-import SimpleParserTest;
-import UnicodeTest;
-import WideCharTest;
-import WParserTest;
+import LocaleTest::main;
+import Minilib.Testing.UnitTest::{TestSuite, TestSuite::run};
+import SimpleParserTest::main;
+import Std::IO;
+import UnicodeTest::main;
+import WParserTest::main;
+import WideCharTest::main;
 
 testsuite: TestSuite;
 testsuite = [
